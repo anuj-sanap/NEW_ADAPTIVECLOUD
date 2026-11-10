@@ -146,3 +146,4 @@ Set-Location frontend; npm run build
 ```
 - 58/58 tests passing across Auth, RBAC, Detection, Classification, Incident Correlation, RCA, Threat Prediction, Predictive Maintenance, Response Engine, Blocklist, Drift Detection, Model Retraining, and Wazuh/WinEvent normalizers.
 **Status**: 58 passed in ~20 seconds.
+

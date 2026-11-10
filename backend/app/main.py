@@ -140,6 +140,7 @@ app.add_middleware(
 
 
 # ── Health Check ─────────────────────────────────────────────────────────────
+@app.get("/health", tags=["health"], summary="Liveness Probe")
 @app.get("/api/v1/health", tags=["health"], summary="Liveness & DB Readiness Check")
 async def health_check(db: AsyncSession = Depends(get_db)) -> JSONResponse:
     db_status = "ok"

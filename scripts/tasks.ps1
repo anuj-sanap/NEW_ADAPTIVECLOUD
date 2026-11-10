@@ -5,7 +5,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position=0, Mandatory=$true)]
-    [ValidateSet("up", "down", "logs", "test", "migrate", "lint", "seed", "certs", "help")]
+    [ValidateSet("up", "down", "prod-up", "prod-down", "logs", "test", "migrate", "lint", "seed", "certs", "e2e", "simulate", "load-test", "backup", "help")]
     [string]$Command,
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -143,25 +143,96 @@ function Invoke-Certs {
     & "$PSScriptRoot\gen_cert.ps1" @ArgsList
 }
 
+function Invoke-ProdUp {
+    Show-Header "Starting Production Docker Compose Stack (deploy/docker-compose.prod.yml)..."
+    Push-Location $DeployDir
+    try {
+        docker compose -f docker-compose.prod.yml up -d $ArgsList
+        Write-Host "Production services running." -ForegroundColor Green
+        docker compose -f docker-compose.prod.yml ps
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Invoke-ProdDown {
+    Show-Header "Stopping Production Docker Compose Stack..."
+    Push-Location $DeployDir
+    try {
+        docker compose -f docker-compose.prod.yml down $ArgsList
+        Write-Host "Production services stopped." -ForegroundColor Yellow
+    }
+    finally {
+        Pop-Location
+    }
+}
+
+function Invoke-E2E {
+    Show-Header "Running End-to-End System Integration Verification..."
+    $scriptPath = Join-Path $RepoRoot "scripts\e2e_test.py"
+    $pythonCmd = "python"
+    $venvPy = Join-Path $BackendDir ".venv\Scripts\python.exe"
+    if (Test-Path $venvPy) {
+        $pythonCmd = $venvPy
+    }
+    & $pythonCmd $scriptPath @ArgsList
+}
+
+function Invoke-Simulate {
+    Show-Header "Running Safe Attack Simulation Suite..."
+    $scriptPath = Join-Path $RepoRoot "scripts\simulate\run_all_simulations.ps1"
+    & powershell.exe -ExecutionPolicy Bypass -File $scriptPath @ArgsList
+}
+
+function Invoke-LoadTest {
+    Show-Header "Running Telemetry Ingestion Load Tester & Benchmark..."
+    $scriptPath = Join-Path $RepoRoot "scripts\load_test.py"
+    $pythonCmd = "python"
+    $venvPy = Join-Path $BackendDir ".venv\Scripts\python.exe"
+    if (Test-Path $venvPy) {
+        $pythonCmd = $venvPy
+    }
+    & $pythonCmd $scriptPath @ArgsList
+}
+
+function Invoke-Backup {
+    Show-Header "Running PostgreSQL Automated Backup..."
+    $scriptPath = Join-Path $RepoRoot "scripts\backup_postgres.ps1"
+    & powershell.exe -ExecutionPolicy Bypass -File $scriptPath @ArgsList
+}
+
 switch ($Command) {
-    "up"      { Invoke-Up }
-    "down"    { Invoke-Down }
-    "logs"    { Invoke-Logs }
-    "test"    { Invoke-Test }
-    "migrate" { Invoke-Migrate }
-    "lint"    { Invoke-Lint }
-    "seed"    { Invoke-Seed }
-    "certs"   { Invoke-Certs }
-    "help"    {
+    "up"        { Invoke-Up }
+    "down"      { Invoke-Down }
+    "prod-up"   { Invoke-ProdUp }
+    "prod-down" { Invoke-ProdDown }
+    "logs"      { Invoke-Logs }
+    "test"      { Invoke-Test }
+    "migrate"   { Invoke-Migrate }
+    "lint"      { Invoke-Lint }
+    "seed"      { Invoke-Seed }
+    "certs"     { Invoke-Certs }
+    "e2e"       { Invoke-E2E }
+    "simulate"  { Invoke-Simulate }
+    "load-test" { Invoke-LoadTest }
+    "backup"    { Invoke-Backup }
+    "help"      {
         Write-Host "AdaptiveCloud Tasks Manager" -ForegroundColor Cyan
-        Write-Host "  up       - Start Docker Compose services in background"
-        Write-Host "  down     - Stop Docker Compose services"
-        Write-Host "  logs     - Follow container logs"
-        Write-Host "  test     - Execute backend test suite"
-        Write-Host "  migrate  - Run Alembic database migrations"
-        Write-Host "  lint     - Run linter / syntax checks"
-        Write-Host "  seed     - Seed administrative user or sample fixtures"
-        Write-Host "  certs    - Generate local TLS development certificates"
+        Write-Host "  up         - Start Docker Compose services in background"
+        Write-Host "  down       - Stop Docker Compose services"
+        Write-Host "  prod-up    - Start Production Docker Compose stack"
+        Write-Host "  prod-down  - Stop Production Docker Compose stack"
+        Write-Host "  logs       - Follow container logs"
+        Write-Host "  test       - Execute backend pytest test suite"
+        Write-Host "  migrate    - Run Alembic database migrations"
+        Write-Host "  lint       - Run linter / syntax checks"
+        Write-Host "  seed       - Seed administrative user or sample fixtures"
+        Write-Host "  certs      - Generate local TLS development certificates"
+        Write-Host "  e2e        - Run 11-step End-to-End integration verification"
+        Write-Host "  simulate   - Run safe attack simulation suite"
+        Write-Host "  load-test  - Run high-throughput ingestion benchmark"
+        Write-Host "  backup     - Run PostgreSQL database backup & 7-day retention"
     }
 }
 
