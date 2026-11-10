@@ -71,3 +71,4 @@ class BlocklistCreate(BaseModel):
     ip: str = Field(..., description="IPv4 or IPv6 address to block")
     reason: Optional[str] = Field("Manual administrative block", description="Forensic rationale")
     ttl_minutes: Optional[int] = Field(60, ge=1, le=43200, description="Time to live in minutes (default: 60)")
+

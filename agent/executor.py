@@ -283,3 +283,4 @@ class AgentExecutor:
         res["returncode"] = p.returncode
         res["output"] = (p.stdout + p.stderr).strip() or f"Service {service_name} restarted successfully."
         return res
+

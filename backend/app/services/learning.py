@@ -384,3 +384,4 @@ async def reject_candidate_model(
         "decision": "rejected",
         "message": f"Candidate model rejected: {reason}",
     }
+

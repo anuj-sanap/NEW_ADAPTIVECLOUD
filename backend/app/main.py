@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.routes import (
     agent_ingest,
+    audit,
     auth,
     blocklist,
     classifications,
@@ -38,12 +39,11 @@ from app.api.v1.routes import (
     models,
     predictions,
     rca,
+    reports,
     responses,
 )
 from app.api.v1.routes.stubs import (
-    audit_router,
     metrics_router,
-    reports_router,
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
@@ -182,11 +182,11 @@ app.include_router(dashboard.router, prefix=v1)
 app.include_router(responses.router, prefix=v1)
 app.include_router(blocklist.router, prefix=v1)
 app.include_router(learning.router, prefix=v1)
+app.include_router(reports.router, prefix=v1)
+app.include_router(audit.router, prefix=v1)
 
 # Route groups (stubs returning 501 until implemented)
 app.include_router(metrics_router, prefix=v1)
-app.include_router(reports_router, prefix=v1)
-app.include_router(audit_router, prefix=v1)
 
 # WebSocket streaming hub
 app.include_router(ws_router)

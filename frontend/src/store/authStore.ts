@@ -1,47 +1,56 @@
 // frontend/src/store/authStore.ts
-// Zustand store for JWT auth state.
-
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { create } from 'zustand';
+import { Role, User } from '../types';
 
 interface AuthState {
-  accessToken: string | null
-  refreshToken: string | null
-  role: string | null
-  username: string | null
-  setTokens: (access: string, refresh: string) => void
-  setAccessToken: (token: string) => void
-  setUser: (username: string, role: string) => void
-  logout: () => void
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  role: Role | null;
+  isViewer: boolean;
+  setAuth: (user: User, token: string) => void;
+  logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      accessToken: null,
-      refreshToken: null,
+const savedToken = localStorage.getItem('adaptivecloud_token');
+let savedUser: User | null = null;
+try {
+  const rawUser = localStorage.getItem('adaptivecloud_user');
+  if (rawUser) {
+    savedUser = JSON.parse(rawUser);
+  }
+} catch {
+  savedUser = null;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: savedUser,
+  token: savedToken,
+  isAuthenticated: !!savedToken,
+  role: savedUser?.role || null,
+  isViewer: savedUser?.role === 'viewer',
+
+  setAuth: (user: User, token: string) => {
+    localStorage.setItem('adaptivecloud_token', token);
+    localStorage.setItem('adaptivecloud_user', JSON.stringify(user));
+    set({
+      user,
+      token,
+      isAuthenticated: true,
+      role: user.role,
+      isViewer: user.role === 'viewer',
+    });
+  },
+
+  logout: () => {
+    localStorage.removeItem('adaptivecloud_token');
+    localStorage.removeItem('adaptivecloud_user');
+    set({
+      user: null,
+      token: null,
+      isAuthenticated: false,
       role: null,
-      username: null,
-
-      setTokens: (access, refresh) =>
-        set({ accessToken: access, refreshToken: refresh }),
-
-      setAccessToken: (token) => set({ accessToken: token }),
-
-      setUser: (username, role) => set({ username, role }),
-
-      logout: () =>
-        set({ accessToken: null, refreshToken: null, role: null, username: null }),
-    }),
-    {
-      name: 'auth-storage',
-      // Only persist refresh token and user info — access token is short-lived
-      partialize: (state) => ({
-        refreshToken: state.refreshToken,
-        username: state.username,
-        role: state.role,
-      }),
-    },
-  ),
-)
-
+      isViewer: false,
+    });
+  },
+}));

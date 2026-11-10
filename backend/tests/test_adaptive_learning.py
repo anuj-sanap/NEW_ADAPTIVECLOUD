@@ -197,3 +197,4 @@ async def test_feedback_submission_and_retraining_apis(
         cand_stmt = select(MLModel).where(MLModel.id == job_row.model_id)
         cand_row = (await db_session.execute(cand_stmt)).scalar_one_or_none()
         assert cand_row.status == "active"
+

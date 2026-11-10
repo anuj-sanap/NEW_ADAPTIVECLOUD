@@ -76,3 +76,4 @@ class PromotionResponse(BaseModel):
     previous_champion_id: Optional[uuid.UUID] = None
     new_champion_id: Optional[uuid.UUID] = None
     message: str
+
