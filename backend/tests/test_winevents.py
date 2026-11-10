@@ -153,3 +153,4 @@ def test_parse_event_xml_malformed():
     assert parse_event_xml("not valid xml <<< >>>") is None
     assert parse_event_xml("<Empty></Empty>") is None
     assert parse_event_xml("") is None
+

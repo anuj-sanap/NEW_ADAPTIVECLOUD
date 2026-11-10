@@ -155,3 +155,4 @@ class SystemCollector:
                 "windows_services": service_statuses,
             },
         }
+

@@ -2,7 +2,18 @@
 backend/tests/conftest.py
 Pytest test fixtures, async SQLite test database, and mock FastAPI client.
 """
+import sys
 from collections.abc import AsyncGenerator
+from pathlib import Path
+
+# Add repo root and backend to sys.path
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
+
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient

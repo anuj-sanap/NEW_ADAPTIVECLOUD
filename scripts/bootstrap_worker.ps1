@@ -1,4 +1,4 @@
-﻿# scripts/bootstrap_worker.ps1
+# scripts/bootstrap_worker.ps1
 # Provisioning script for Windows Server 2022 worker node.
 # Must be executed as Administrator on the GCP Windows VM.
 
@@ -151,3 +151,4 @@ if (-not $existingService) {
 Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host "  Worker Bootstrap Complete!                               " -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
+

@@ -158,3 +158,4 @@ To release all disks, IPs, and compute resources completely:
 ```powershell
 .\scripts\gcp_teardown.ps1
 ```
+

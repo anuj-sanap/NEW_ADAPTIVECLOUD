@@ -119,3 +119,4 @@ Write-Host "`nConnect via Microsoft Remote Desktop:" -ForegroundColor Cyan
 Write-Host "  mstsc /v:$workerIp`n" -ForegroundColor White
 Write-Host "To stop instance and halt trial credit deductions:" -ForegroundColor Yellow
 Write-Host "  gcloud compute instances stop $InstanceName --zone=$Zone`n" -ForegroundColor Gray
+

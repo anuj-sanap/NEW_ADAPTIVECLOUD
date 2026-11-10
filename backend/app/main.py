@@ -4,9 +4,16 @@ FastAPI application entry point.
 Configures CORS, custom global error envelope {error: {code, message}},
 health monitoring with database ping, and mounts all API v1 and WebSocket routes.
 """
+import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import AsyncGenerator
+
+# Ensure repository root is on sys.path for ml and agent imports
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -15,22 +22,24 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.routes import agent_ingest, auth, events, hosts, ingest
+from app.api.v1.routes import (
+    agent_ingest,
+    auth,
+    classifications,
+    detections,
+    events,
+    hosts,
+    incidents,
+    ingest,
+    models,
+)
 from app.api.v1.routes.stubs import (
     audit_router,
-    blocklist_router,
-    classifications_router,
     dashboard_router,
-    detections_router,
-    incidents_router,
     learning_router,
-    maintenance_router,
     metrics_router,
-    models_router,
-    predictions_router,
     rca_router,
     reports_router,
-    responses_router,
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
@@ -155,18 +164,14 @@ app.include_router(ingest.router, prefix=v1)
 app.include_router(agent_ingest.router, prefix=v1)
 app.include_router(hosts.router, prefix=v1)
 app.include_router(events.router, prefix=v1)
+app.include_router(detections.router, prefix=v1)
+app.include_router(classifications.router, prefix=v1)
+app.include_router(incidents.router, prefix=v1)
+app.include_router(models.router, prefix=v1)
 
 # Route groups (stubs returning 501 until implemented)
 app.include_router(metrics_router, prefix=v1)
-app.include_router(detections_router, prefix=v1)
-app.include_router(classifications_router, prefix=v1)
-app.include_router(incidents_router, prefix=v1)
 app.include_router(rca_router, prefix=v1)
-app.include_router(predictions_router, prefix=v1)
-app.include_router(maintenance_router, prefix=v1)
-app.include_router(responses_router, prefix=v1)
-app.include_router(blocklist_router, prefix=v1)
-app.include_router(models_router, prefix=v1)
 app.include_router(learning_router, prefix=v1)
 app.include_router(reports_router, prefix=v1)
 app.include_router(audit_router, prefix=v1)

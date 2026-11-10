@@ -52,6 +52,10 @@ ml/models/*.joblib
 ml/models/*.bin
 ml/data/*.csv
 ml/data/*.parquet
+ml/data/raw/
+ml/data/cache/
+ml/data/**/*.csv
+ml/data/**/*.parquet
 
 # ── Docker ───────────────────────────────────────────────────────────────────
 docker-compose.override.yml

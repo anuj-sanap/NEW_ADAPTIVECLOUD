@@ -50,3 +50,4 @@ if ($fwExists) {
 }
 
 Write-Host "`nTeardown complete. All billable worker resources have been removed." -ForegroundColor Green
+

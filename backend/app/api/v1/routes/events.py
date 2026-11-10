@@ -99,3 +99,4 @@ async def list_security_events(
         size=size,
         pages=pages,
     )
+

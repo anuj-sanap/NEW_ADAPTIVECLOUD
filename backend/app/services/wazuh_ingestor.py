@@ -23,6 +23,7 @@ from app.core.logging import get_logger
 from app.db.session import AsyncSessionLocal
 from app.models.host import Host
 from app.models.security_event import SecurityEvent
+from app.services.classification import classify_and_correlate
 from app.websocket.manager import ws_manager
 
 logger = get_logger("wazuh_ingestor")
@@ -227,6 +228,25 @@ class WazuhAlertTailer:
                 "ts": parsed["ts"].isoformat(),
             },
         )
+
+        # Correlate into classification and incidents if significant security event
+        if parsed["level"] >= 8 or parsed["category"] in ("brute_force", "unauthorized_access", "suspicious_process", "port_scan", "ddos"):
+            try:
+                async with AsyncSessionLocal() as db:
+                    await classify_and_correlate(
+                        db=db,
+                        host_id=host_id,
+                        ts=parsed["ts"],
+                        event_data={
+                            "event_id": parsed["event_id"],
+                            "category": parsed["category"],
+                            "raw": parsed["raw"],
+                        },
+                        src_ip=parsed["src_ip"],
+                    )
+            except Exception as e:
+                logger.error("Failed correlating Wazuh alert into incident", error=str(e))
+
         logger.info(
             "Wazuh alert ingested and published",
             rule_id=parsed["rule_id"],
@@ -291,3 +311,4 @@ class WazuhAlertTailer:
 
 
 wazuh_tailer = WazuhAlertTailer(settings.WAZUH_ALERTS_PATH)
+

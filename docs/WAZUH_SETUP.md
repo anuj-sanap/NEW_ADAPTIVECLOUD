@@ -149,3 +149,4 @@ AdaptiveCloud supplies custom rules for monitored Windows endpoints:
    Invoke-RestMethod -Method Get "https://localhost/api/v1/events?category=brute_force" `
      -Headers @{Authorization="Bearer $token"} -SkipCertificateCheck
    ```
+

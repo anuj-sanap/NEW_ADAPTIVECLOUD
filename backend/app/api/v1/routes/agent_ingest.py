@@ -28,6 +28,7 @@ from app.models.host import Host
 from app.models.metric import Metric
 from app.models.response import ResponseAction
 from app.models.security_event import SecurityEvent
+from app.services.detection import evaluate_flow_telemetry
 from app.websocket.manager import ws_manager
 
 router = APIRouter(prefix="/agents", tags=["agents"])
@@ -251,6 +252,7 @@ async def ingest_agent_flows(
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> dict[str, Any]:
     items = [payload] if isinstance(payload, FlowIngestItem) else payload
+    eval_results = []
     for item in items:
         flow = FlowFeature(
             host_id=host.id,
@@ -258,9 +260,18 @@ async def ingest_agent_flows(
             features=item.features,
         )
         db.add(flow)
+        # Real-time inference evaluation
+        eval_res = await evaluate_flow_telemetry(
+            db=db,
+            host_id=host.id,
+            ts=item.ts,
+            features=item.features,
+            src_ip=host.ip_address,
+        )
+        eval_results.append(eval_res)
 
     await db.commit()
-    return {"status": "accepted", "count": len(items)}
+    return {"status": "accepted", "count": len(items), "detections": eval_results}
 
 
 @router.get(

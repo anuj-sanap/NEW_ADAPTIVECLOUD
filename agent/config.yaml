@@ -44,3 +44,4 @@ collectors:
     enabled: false            # Set true if Npcap / Scapy is installed
     window_sec: 5
     interface: ""             # Empty = default network interface
+
