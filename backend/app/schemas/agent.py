@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, IPvAnyAddress
+from pydantic import BaseModel, Field
 
 
 class AgentCreate(BaseModel):
@@ -33,3 +33,4 @@ class AgentResponse(BaseModel):
     revoked: bool
 
     model_config = {"from_attributes": True}
+

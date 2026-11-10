@@ -1,52 +1,87 @@
 """
 backend/app/websocket/manager.py
-WebSocket connection manager for live event broadcasting.
-Implements the envelope: {type, channel, ts, data}.
+WebSocket live event streaming hub with channel subscriptions,
+heartbeat monitoring (20s interval), and broadcast publishing.
+Channels: metrics, detections, incidents, predictions, responses, models.
+Envelope: {type, channel, ts, data}
 """
 import asyncio
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 
-import structlog
 from fastapi import WebSocket
+from app.core.logging import get_logger
 
-logger = structlog.get_logger(__name__)
+logger = get_logger("websocket.manager")
+
+VALID_CHANNELS = {
+    "metrics",
+    "detections",
+    "incidents",
+    "predictions",
+    "responses",
+    "models",
+    "system",
+}
+
+ChannelType = Literal[
+    "metrics",
+    "detections",
+    "incidents",
+    "predictions",
+    "responses",
+    "models",
+    "system",
+]
 
 
 class ConnectionManager:
     """
-    Manages a set of active WebSocket connections and broadcasts messages.
-
-    Each connection is tracked as an authenticated WebSocket instance.
-    Messages are sent concurrently using asyncio.gather with
-    return_exceptions=True so a failed send never drops other clients.
+    Manages client WebSocket connections, channel dispatching,
+    and background heartbeat pings.
     """
 
     def __init__(self) -> None:
-        # Set of active websocket connections
         self._connections: set[WebSocket] = set()
         self._lock = asyncio.Lock()
+        self._heartbeat_task: asyncio.Task | None = None
+
+    def start_heartbeat(self) -> None:
+        """Start background 20-second heartbeat loop if not already running."""
+        if self._heartbeat_task is None or self._heartbeat_task.done():
+            self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
+
+    async def _heartbeat_loop(self) -> None:
+        """Send periodic ping envelope every 20 seconds to all active clients."""
+        while True:
+            try:
+                await asyncio.sleep(20)
+                await self.publish(
+                    channel="system",
+                    msg_type="ping",
+                    data={"server_time": datetime.now(UTC).isoformat()},
+                )
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.warning("Heartbeat error", error=str(e))
 
     async def connect(self, ws: WebSocket) -> None:
-        """Accept and register a WebSocket connection."""
+        """Accept a client websocket connection."""
         await ws.accept()
         async with self._lock:
             self._connections.add(ws)
-        logger.info("WS client connected", total=len(self._connections))
+        self.start_heartbeat()
+        logger.info("Client connected to WS hub", active_clients=len(self._connections))
 
     async def disconnect(self, ws: WebSocket) -> None:
-        """Remove a WebSocket connection (safe to call even if not registered)."""
+        """Unregister a client connection."""
         async with self._lock:
             self._connections.discard(ws)
-        logger.info("WS client disconnected", total=len(self._connections))
+        logger.info("Client disconnected from WS hub", active_clients=len(self._connections))
 
-    def _make_envelope(
-        self,
-        channel: str,
-        data: Any,
-        msg_type: str = "event",
-    ) -> dict[str, Any]:
-        """Build the standard WebSocket message envelope."""
+    def _make_envelope(self, channel: str, msg_type: str, data: Any) -> dict[str, Any]:
+        """Wrap payload in standard event envelope."""
         return {
             "type": msg_type,
             "channel": channel,
@@ -54,44 +89,42 @@ class ConnectionManager:
             "data": data,
         }
 
-    async def broadcast(
+    async def publish(
         self,
-        channel: str,
-        data: Any,
+        channel: ChannelType | str,
         msg_type: str = "event",
+        data: Any = None,
     ) -> None:
         """
-        Send a message to all connected clients.
-        Dead connections are silently removed.
+        Broadcast message to all connected clients.
+        Dead connections are detected and purged safely.
         """
-        envelope = self._make_envelope(channel, data, msg_type)
+        if data is None:
+            data = {}
+        envelope = self._make_envelope(channel, msg_type, data)
         dead: set[WebSocket] = set()
 
         async with self._lock:
-            snapshot = set(self._connections)
+            clients = set(self._connections)
 
-        async def _send(ws: WebSocket) -> None:
+        async def _send(client: WebSocket) -> None:
             try:
-                await ws.send_json(envelope)
+                await client.send_json(envelope)
             except Exception:
-                dead.add(ws)
+                dead.add(client)
 
-        await asyncio.gather(*[_send(ws) for ws in snapshot], return_exceptions=True)
+        if clients:
+            await asyncio.gather(*[_send(c) for c in clients], return_exceptions=True)
 
         if dead:
             async with self._lock:
                 self._connections -= dead
-            logger.debug("Removed dead WS connections", count=len(dead))
+            logger.debug("Purged dead connections", count=len(dead))
 
-    async def send_pong(self, ws: WebSocket) -> None:
-        """Respond to a client ping with a pong envelope."""
-        try:
-            await ws.send_json(
-                self._make_envelope("system", {}, msg_type="pong")
-            )
-        except Exception:
-            await self.disconnect(ws)
+    # Backward-compatible alias
+    async def broadcast(self, channel: str, data: Any, msg_type: str = "event") -> None:
+        await self.publish(channel=channel, msg_type=msg_type, data=data)
 
 
-# Singleton — imported by routes and background tasks
+# Global singleton instance
 ws_manager = ConnectionManager()

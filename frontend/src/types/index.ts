@@ -105,3 +105,4 @@ export interface MLStatus {
   labels?: string[]
   job_status?: string
 }
+

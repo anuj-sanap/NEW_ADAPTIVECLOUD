@@ -1,12 +1,12 @@
 """
 backend/app/db/base.py
-SQLAlchemy declarative base and common mixin used by all models.
+SQLAlchemy 2.0 declarative base and common mixins.
+Compatible with PostgreSQL (production) and SQLite (testing).
 """
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime
 
-from sqlalchemy import DateTime, String, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime, Uuid, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -16,10 +16,10 @@ class Base(DeclarativeBase):
 
 
 class UUIDPrimaryKeyMixin:
-    """Mixin: UUID primary key generated server-side."""
+    """Mixin: UUID v4 primary key generated client/server-side."""
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
@@ -27,7 +27,7 @@ class UUIDPrimaryKeyMixin:
 
 
 class TimestampMixin:
-    """Mixin: created_at / updated_at timestamps in UTC."""
+    """Mixin: created_at / updated_at timestamps with UTC timezone."""
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

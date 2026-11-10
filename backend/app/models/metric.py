@@ -1,65 +1,49 @@
 """
 backend/app/models/metric.py
-SQLAlchemy ORM model for metric snapshots ingested from agents.
-Partitioned in PostgreSQL by collected_at (monthly RANGE partitions).
+SQLAlchemy ORM model for host resource telemetry metrics.
 """
 import uuid
 from datetime import datetime
+from typing import Any, Optional
 
-from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, JSON, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base
+from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
-class Metric(Base):
+class Metric(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """
-    Telemetry snapshot from a Windows agent.
-    Table is range-partitioned on collected_at (monthly) in PostgreSQL.
-    The partition DDL is managed via Alembic raw SQL migration.
+    Periodic resource metrics collected from a monitored host.
+    Includes CPU, memory, disk, network I/O, load, process count, connection count.
     """
 
     __tablename__ = "metrics"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    host_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("hosts.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    agent_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("agents.id", ondelete="CASCADE"),
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         nullable=False,
         index=True,
     )
-    collected_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True, primary_key=True
+
+    cpu: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    mem: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    disk: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    net_in: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    net_out: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    load: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    proc_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    conn_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    extra: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True, default=dict)
+
+    __table_args__ = (
+        Index("ix_metrics_host_id_ts", "host_id", "ts"),
     )
-    ingested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
-    # ── CPU / Memory ──────────────────────────────────────────────────────────
-    cpu_percent: Mapped[float] = mapped_column(Float, nullable=False)
-    memory_percent: Mapped[float] = mapped_column(Float, nullable=False)
-    memory_used_mb: Mapped[float] = mapped_column(Float, nullable=False)
-
-    # ── Disk I/O ─────────────────────────────────────────────────────────────
-    disk_read_bytes_sec: Mapped[float] = mapped_column(Float, nullable=False)
-    disk_write_bytes_sec: Mapped[float] = mapped_column(Float, nullable=False)
-
-    # ── Network I/O ──────────────────────────────────────────────────────────
-    net_bytes_sent_sec: Mapped[float] = mapped_column(Float, nullable=False)
-    net_bytes_recv_sec: Mapped[float] = mapped_column(Float, nullable=False)
-
-    # ── Connections / Processes ───────────────────────────────────────────────
-    active_connections: Mapped[int] = mapped_column(Integer, nullable=False)
-    process_count: Mapped[int] = mapped_column(Integer, nullable=False)
-    top_processes: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
-
-    # ── Windows Event Log ────────────────────────────────────────────────────
-    event_log_errors_1m: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    event_log_warnings_1m: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     def __repr__(self) -> str:
-        return (
-            f"<Metric id={self.id} agent_id={self.agent_id} "
-            f"collected_at={self.collected_at.isoformat()}>"
-        )
+        return f"<Metric id={self.id} host_id={self.host_id} ts={self.ts} cpu={self.cpu}>"

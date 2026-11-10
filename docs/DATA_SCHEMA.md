@@ -175,3 +175,4 @@ status            enum            queued | training | ready | failed
 | `predictions` | No | agent_id, metric_id, label |
 | `alerts` | No | agent_id, acknowledged, created_at |
 | `ml_models` | No | is_active, trained_at |
+

@@ -86,3 +86,4 @@ async def revoke_agent(
 
     agent.revoked = True
     agent.status = "offline"
+

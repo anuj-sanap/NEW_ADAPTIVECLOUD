@@ -21,7 +21,6 @@ from app.schemas.prediction import (
     MLNotAvailable,
     MLStatusResponse,
     PredictionListResponse,
-    PredictionRecord,
     TrainJobResponse,
 )
 
@@ -132,3 +131,4 @@ async def ml_status(
     except Exception as exc:
         logger.warning("ML status check failed", error=str(exc))
         return MLStatusResponse(status="not_available")
+

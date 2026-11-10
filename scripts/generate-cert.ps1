@@ -1,4 +1,4 @@
-﻿# Generate a self-signed TLS certificate for local dev (Nginx)
+# Generate a self-signed TLS certificate for local dev (Nginx)
 # Requires OpenSSL (included with Git for Windows at C:\Program Files\Git\usr\bin\openssl.exe)
 # Or install mkcert for a CA-trusted cert: https://github.com/FiloSottile/mkcert
 
@@ -59,3 +59,4 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "❌ OpenSSL failed with exit code $LASTEXITCODE" -ForegroundColor Red
     exit 1
 }
+

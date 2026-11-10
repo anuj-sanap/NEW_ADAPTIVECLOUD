@@ -1,23 +1,23 @@
 """
 backend/alembic/env.py
-Alembic migration environment — async SQLAlchemy engine.
+Alembic migration environment configured with async SQLAlchemy engine.
 """
 import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
-# Import all models so Alembic can detect schema changes
+# Import all models to populate Base.metadata
 from app.db.base import Base
-from app.models import user, agent, metric, prediction, alert  # noqa: F401
+import app.models  # noqa: F401
 from app.core.config import get_settings
 
 config = context.config
 settings = get_settings()
 
-# Override sqlalchemy.url with the value from app settings
+# Inject active database connection string from application settings
 config.set_main_option("sqlalchemy.url", str(settings.DATABASE_URL))
 
 if config.config_file_name:
@@ -27,7 +27,7 @@ target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    """Run migrations without a live DB connection (SQL script output)."""
+    """Run migrations in offline mode."""
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -46,7 +46,7 @@ def do_run_migrations(connection):
 
 
 async def run_migrations_online() -> None:
-    """Run migrations with a live async DB connection."""
+    """Run migrations in online mode."""
     connectable = async_engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

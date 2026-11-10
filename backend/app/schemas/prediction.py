@@ -55,3 +55,4 @@ class TrainJobResponse(BaseModel):
     job_id: uuid.UUID
     status: Literal["queued"]
     message: str
+

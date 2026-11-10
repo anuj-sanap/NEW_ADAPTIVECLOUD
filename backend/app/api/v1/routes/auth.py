@@ -1,6 +1,6 @@
 """
 backend/app/api/v1/routes/auth.py
-Authentication endpoints: login, refresh.
+Authentication endpoints: login, token refresh, and /auth/me profile inspection.
 """
 from datetime import UTC, datetime
 from typing import Annotated
@@ -10,6 +10,7 @@ from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.dependencies import get_current_user
 from app.core.config import get_settings
 from app.core.security import (
     create_access_token,
@@ -25,30 +26,39 @@ from app.schemas.auth import (
     RefreshRequest,
     TokenResponse,
 )
+from pydantic import BaseModel
+from uuid import UUID
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 settings = get_settings()
 
 
+class UserProfileResponse(BaseModel):
+    id: UUID
+    username: str
+    email: str
+    role: str
+    is_active: bool
+    last_login: datetime | None
+
+    model_config = {"from_attributes": True}
+
+
 @router.post(
     "/login",
     response_model=TokenResponse,
-    summary="Authenticate and receive JWT tokens",
+    summary="Authenticate user and issue JWT access and refresh tokens",
 )
 async def login(
     body: LoginRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> TokenResponse:
-    """
-    Validate username + password and issue access + refresh tokens.
-    Returns HTTP 401 on any credential mismatch (intentionally vague).
-    """
     result = await db.execute(select(User).where(User.username == body.username))
     user: User | None = result.scalar_one_or_none()
 
     invalid_exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials",
+        detail="Invalid username or password",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
@@ -57,7 +67,6 @@ async def login(
     if not verify_password(body.password, user.password_hash):
         raise invalid_exc
 
-    # Update last_login
     user.last_login = datetime.now(UTC)
     await db.commit()
 
@@ -72,16 +81,12 @@ async def login(
 @router.post(
     "/refresh",
     response_model=AccessTokenResponse,
-    summary="Exchange refresh token for new access token",
+    summary="Exchange valid refresh token for a new access token",
 )
-async def refresh(
+async def refresh_token_endpoint(
     body: RefreshRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> AccessTokenResponse:
-    """
-    Validate a refresh JWT and issue a new access token.
-    Does not rotate the refresh token (stateless; revocation via short access TTL).
-    """
     exc = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired refresh token",
@@ -89,12 +94,12 @@ async def refresh(
     )
     try:
         payload = decode_refresh_token(body.refresh_token)
-        user_id: str = payload.get("sub", "")
-    except JWTError:
+        user_id_str: str = payload.get("sub", "")
+        user_id = UUID(user_id_str)
+    except (JWTError, ValueError):
         raise exc
 
-    from uuid import UUID
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
+    result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
 
     if user is None or not user.is_active:
@@ -105,3 +110,14 @@ async def refresh(
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
+
+
+@router.get(
+    "/me",
+    response_model=UserProfileResponse,
+    summary="Retrieve profile of currently authenticated user",
+)
+async def get_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> UserProfileResponse:
+    return UserProfileResponse.model_validate(current_user)

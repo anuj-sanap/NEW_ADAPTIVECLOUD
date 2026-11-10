@@ -1,65 +1,73 @@
 """
 backend/app/models/prediction.py
-SQLAlchemy ORM model for ML inference results.
+SQLAlchemy ORM models for ML predictive metrics, attack forecasts, and maintenance projections.
 """
 import uuid
-
 from datetime import datetime
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from typing import Any, Optional
+
+from sqlalchemy import DateTime, Float, ForeignKey, Index, Integer, JSON, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db.base import Base
-
-# Valid attack classification labels — keep in sync with docs/DATA_SCHEMA.md
-ATTACK_LABELS = (
-    "benign",
-    "brute_force",
-    "ddos",
-    "port_scan",
-    "unauthorized_access",
-    "suspicious_process",
-)
+from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
-class Prediction(Base):
-    """ML inference result linked to a specific metric snapshot."""
+class Prediction(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Predictive maintenance / forecasting model output.
+    kind: threat | cpu | memory | disk | service
+    """
 
     __tablename__ = "predictions"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    host_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("hosts.id", ondelete="CASCADE"),
+        nullable=False,
     )
-    agent_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("agents.id", ondelete="CASCADE"),
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
         nullable=False,
         index=True,
     )
-    metric_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        nullable=False,  # FK to metrics (composite PK — handled via raw FK in migration)
-        index=True,
-    )
-    predicted_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
-    )
-    label: Mapped[str] = mapped_column(
-        Enum(*ATTACK_LABELS, name="attack_label_enum"),
-        nullable=False,
-        index=True,
-    )
-    confidence: Mapped[float] = mapped_column(Float, nullable=False)
-    model_version: Mapped[str] = mapped_column(String(32), nullable=False)
-    features_used: Mapped[list] = mapped_column(
-        # PostgreSQL text array for feature name list
-        ARRAY(String),
-        nullable=False,
-        default=list,
+
+    # Kind: threat | cpu | memory | disk | service
+    kind: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    horizon_min: Mapped[int] = mapped_column(Integer, nullable=False, default=15)
+    value: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    probability: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    model_id: Mapped[Optional[uuid.UUID]] = mapped_column(Uuid(as_uuid=True), nullable=True, index=True)
+    outcome_observed: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+
+    __table_args__ = (
+        Index("ix_predictions_host_id_ts", "host_id", "ts"),
     )
 
     def __repr__(self) -> str:
-        return (
-            f"<Prediction id={self.id} label={self.label!r} "
-            f"confidence={self.confidence:.2f}>"
-        )
+        return f"<Prediction id={self.id} host_id={self.host_id} kind={self.kind} prob={self.probability:.2f}>"
+
+
+class MaintenanceForecast(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """
+    Predictive maintenance forecast estimating component exhaustion or failure horizon.
+    """
+
+    __tablename__ = "maintenance_forecasts"
+
+    host_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("hosts.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    component: Mapped[str] = mapped_column(String(64), nullable=False)  # disk, memory, cpu, pagefile
+    metric_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    days_remaining: Mapped[float] = mapped_column(Float, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    details: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+
+    __table_args__ = (
+        Index("ix_maintenance_forecasts_host_id", "host_id"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<MaintenanceForecast id={self.id} host_id={self.host_id} component={self.component} days={self.days_remaining:.1f}>"

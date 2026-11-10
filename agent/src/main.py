@@ -6,11 +6,19 @@ Reads config from .env, collects metrics on a schedule, and POSTs to backend.
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import time
 from pathlib import Path
 
-# ── Logging setup (before any other imports that might log) ──────────────────
+from dotenv import load_dotenv
+
+# Load .env from agent directory
+load_dotenv(Path(__file__).parent.parent / ".env")
+
+from collector import MetricsCollector  # noqa: E402
+from sender import MetricSender  # noqa: E402
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
@@ -19,19 +27,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger("agent")
 
-# ── Load .env from agent directory ───────────────────────────────────────────
-from dotenv import load_dotenv
-load_dotenv(Path(__file__).parent.parent / ".env")
-
-import os
-from collector import collector as _collector_mod
-from collector import MetricsCollector
-from sender import MetricSender
-
-# ── Configuration from environment ───────────────────────────────────────────
-AGENT_ID: str = os.environ["AGENT_ID"]          # UUID assigned at registration
-AGENT_API_KEY: str = os.environ["AGENT_API_KEY"] # Raw key from POST /agents
-BACKEND_URL: str = os.environ["BACKEND_URL"]     # e.g. https://100.64.0.1
+# Configuration from environment
+AGENT_ID: str = os.environ.get("AGENT_ID", "00000000-0000-0000-0000-000000000000")
+AGENT_API_KEY: str = os.environ.get("AGENT_API_KEY", "dev-key")
+BACKEND_URL: str = os.environ.get("BACKEND_URL", "https://localhost")
 COLLECT_INTERVAL: int = int(os.getenv("COLLECT_INTERVAL_SEC", "30"))
 
 
@@ -44,7 +43,7 @@ def main() -> None:
     collector = MetricsCollector(agent_id=AGENT_ID)
     sender = MetricSender(backend_url=BACKEND_URL, api_key=AGENT_API_KEY)
 
-    # Warm up CPU counters (psutil needs an initial interval call)
+    # Warm up CPU counters
     import psutil
     psutil.cpu_percent(interval=1)
 
@@ -53,8 +52,10 @@ def main() -> None:
             snapshot = collector.collect()
             ok = sender.send(snapshot)
             if ok:
-                logger.info("Snapshot sent | cpu=%.1f%% mem=%.1f%%",
-                            snapshot["cpu_percent"], snapshot["memory_percent"])
+                logger.info(
+                    "Snapshot sent | cpu=%.1f%% mem=%.1f%%",
+                    snapshot["cpu_percent"], snapshot["memory_percent"],
+                )
         except Exception as exc:
             logger.error("Failed to send metric: %s", exc, exc_info=True)
 

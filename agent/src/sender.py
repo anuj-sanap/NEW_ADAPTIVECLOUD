@@ -76,3 +76,4 @@ class MetricSender:
         resp.raise_for_status()
         logger.debug("Metric sent OK | metric_id=%s", resp.json().get("metric_id"))
         return True
+

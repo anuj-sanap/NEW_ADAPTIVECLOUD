@@ -72,3 +72,4 @@ def payloads_to_dataframe(payloads: list[dict]) -> pd.DataFrame:
 
     df = pd.DataFrame(rows, columns=FEATURE_NAMES)
     return df.dropna()
+

@@ -114,3 +114,4 @@ class Predictor:
             "labels": self._meta.get("label_classes", LABEL_CLASSES),
             "job_status": "idle",
         }
+

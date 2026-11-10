@@ -1,4 +1,4 @@
-﻿# Adaptive Cloud Security — Project Bootstrap Script
+# Adaptive Cloud Security — Project Bootstrap Script
 # Run from monorepo root: .\scripts\bootstrap.ps1
 
 #Requires -Version 7.0
@@ -191,3 +191,4 @@ Write-Host "       cd backend; .\.venv\Scripts\python scripts\create_admin.py"
 Write-Host "  7. Start the frontend dev server:"
 Write-Host "       cd frontend; npm run dev"
 Write-Host ""
+

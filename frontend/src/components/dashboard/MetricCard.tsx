@@ -14,3 +14,4 @@ export default function MetricCard({ label, value, subtext }: MetricCardProps) {
     </div>
   )
 }
+

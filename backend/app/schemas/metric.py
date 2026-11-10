@@ -4,7 +4,6 @@ Pydantic schemas for metric ingest and query endpoints.
 """
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -66,3 +65,4 @@ class MetricRecord(MetricPayload):
 class MetricListResponse(BaseModel):
     total: int
     items: list[MetricRecord]
+

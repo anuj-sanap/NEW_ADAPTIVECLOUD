@@ -7,14 +7,13 @@ from __future__ import annotations
 
 import logging
 import sys
-import uuid
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any, AsyncGenerator
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logging.basicConfig(
     level=logging.INFO,
@@ -99,7 +98,7 @@ async def train(req: TrainRequest, background_tasks: BackgroundTasks) -> JSONRes
         _training_status["job_status"] = "training"
         try:
             # Import here so the module loads after lifespan
-            from trainer import InsufficientDataError, train as _train
+            from trainer import InsufficientDataError
 
             # TODO Phase 2: fetch labelled data from backend DB via REST
             # For now, we raise InsufficientDataError cleanly
@@ -148,3 +147,4 @@ async def health() -> JSONResponse:
         "model_ready": predictor_instance.is_ready() if predictor_instance else False,
         "timestamp": datetime.now(UTC).isoformat(),
     })
+

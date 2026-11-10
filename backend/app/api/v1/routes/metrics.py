@@ -87,3 +87,4 @@ async def latest_metrics(
 
     result = await db.execute(stmt)
     return result.scalars().all()  # type: ignore[return-value]
+

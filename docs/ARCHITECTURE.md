@@ -1,172 +1,95 @@
-# Architecture — Adaptive Cloud Security System
+# AdaptiveCloud Architecture Documentation
 
-## Overview
-An AI-driven security monitoring platform that collects real-time telemetry from
-Windows Server VMs on GCP, streams it through a FastAPI backend, runs ML-based
-attack classification, and displays live alerts on a React dashboard.
+## 1. System Overview
+The **AI-Based Adaptive Cloud Security and Predictive Maintenance System** is an end-to-end, zero-budget cloud security and host health monitoring platform.
 
----
-
-## Component Map
+- **Monitored Workers**: Windows Server 2022 VMs hosted on Google Cloud Platform (utilizing free trial credits).
+- **Control Plane**: Docker Compose on a developer Windows 10/11 workstation with WSL2 backend.
+- **Private Networking**: Tailscale WireGuard mesh encrypts and routes all traffic between GCP VMs and the local PC without exposing public ports.
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Developer PC (Windows 10/11)                                       │
-│  ┌─────────────────── Docker Compose ───────────────────────────┐   │
-│  │  nginx (HTTPS:443)  ←──── reverse proxy ────────────────────┐│   │
-│  │  fastapi (:8000)    ←──── REST + WebSocket                  ││   │
-│  │  ml-service (:8001) ←──── inference + training              ││   │
-│  │  postgres (:5432)   ←──── persistent storage                ││   │
-│  │  wazuh-manager (:1514/:55000) ← SIEM                        ││   │
-│  └──────────────────────────────────────────────────────────────┘│   │
-│                                                                     │
-│  React Dev Server (:5173)  ← Vite HMR (dev only)                  │
-└──────────────────┬──────────────────────────────────────────────────┘
-                   │ Tailscale mesh (encrypted WireGuard)
-        ┌──────────┴──────────┐
-        │                     │
-┌───────▼────────┐   ┌────────▼───────┐
-│ GCP VM #1      │   │ GCP VM #2      │
-│ Windows Srv    │   │ Windows Srv    │
-│ 2022           │   │ 2022           │
-│                │   │                │
-│ agent/         │   │ agent/         │
-│ (psutil +      │   │ (psutil +      │
-│  pywin32)      │   │  pywin32)      │
-│                │   │                │
-│ Wazuh Agent    │   │ Wazuh Agent    │
-│ (MSI)          │   │ (MSI)          │
-└────────────────┘   └────────────────┘
-```
-
----
-
-## Network Topology
-
-### Tailscale Mesh
-- All nodes (dev PC + GCP VMs) join the same Tailscale tailnet
-- Each node gets a stable `100.x.x.x` Tailscale IP
-- WireGuard encrypts all traffic between nodes — no public IPs needed
-- Dev PC acts as the control plane; VMs are workers
-- Cost: **₹0** (Tailscale free tier: up to 100 devices, 3 users)
-
-### Port Map
-| Service | Listen | Exposed |
-|---------|--------|---------|
-| Nginx | 443, 80 | PC Tailscale IP |
-| FastAPI | 8000 | Nginx only (not direct) |
-| ML Service | 8001 | FastAPI only (internal) |
-| PostgreSQL | 5432 | Backend only (not Nginx) |
-| Wazuh Manager API | 55000 | Nginx + FastAPI |
-| Wazuh Agent | 1514 | VMs → PC |
-| React (dev) | 5173 | localhost only |
-
----
-
-## Security Model
-
-### Transport
-- Tailscale provides WireGuard encryption for all VM ↔ PC traffic
-- Nginx terminates TLS (mkcert self-signed or Let's Encrypt)
-- Internal Docker services communicate over Docker bridge network
-
-### Application Auth
-1. **Human users** → JWT (HS256, 15-min access + 7-day refresh)
-2. **Agent processes** → X-API-Key (bcrypt-hashed in DB, never stored plain)
-3. **WebSocket** → JWT passed as query param `?token=<access_token>`
-
-### Role-Based Access
-- `admin`: full CRUD, can train models, manage agents/users
-- `analyst`: read metrics, predictions, alerts; cannot manage agents
-- `viewer`: read-only dashboard access
-
----
-
-## Data Pipeline
-
-```
-Windows Agent (every 30s)
-    │
-    ▼  POST /api/v1/ingest (X-API-Key)
-FastAPI Backend
-    │
-    ├── Save MetricRecord to PostgreSQL
-    ├── Broadcast raw metric over WebSocket (channel: "metrics")
-    └── POST to ML Service /predict (internal)
-            │
-            ▼
-        ML Service
-            ├── Load active model (XGBoost / scikit-learn)
-            ├── Extract features from MetricPayload
-            ├── Predict label + confidence
-            └── POST result back to Backend
-                    │
-                    ├── Save PredictionRecord to PostgreSQL
-                    ├── Broadcast prediction over WebSocket (channel: "predictions")
-                    └── If threat detected → create AlertRecord
-                                └── Broadcast alert over WebSocket (channel: "alerts")
+       +-------------------------------------------------------------+
+       | GCP Free Tier VM (Windows Server 2022)                       |
+       |  - Python 3.11 Ingest Agent (psutil + pywin32)              |
+       |  - Wazuh Host Agent MSI                                     |
+       |  - Tailscale Client (IP: 100.64.0.2)                        |
+       +------------------------------+------------------------------+
+                                      | WireGuard Tunnel (Tailscale)
+                                      v
++-------------------------------------+-------------------------------------+
+| Developer Workstation (Windows 10/11 + Docker Desktop WSL2)                |
+| Tailscale Node (IP: 100.64.0.1)                                            |
+|                                                                           |
+|  +---------------------------------------------------------------------+  |
+|  | Nginx Reverse Proxy (:80 -> :443 HTTPS, TLS, Rate Limiting, WS)     |  |
+|  +-------------------+-----------------------------+-------------------+  |
+|                      |                             |                      |
+|                      v                             v                      |
+|  +-------------------------------+     +-------------------------------+  |
+|  | FastAPI Backend (:8000)       |     | React 18 SPA (Vite/Tailwind)  |  |
+|  | - JWT Auth & RBAC (3 Roles)   |     +-------------------------------+  |
+|  | - REST Ingest & WebSocket Hub |                                        |
+|  | - Correlator & Adaptive Engine|                                        |
+|  +---------------+---------------+                                        |
+|                  |                                                        |
+|         +--------+--------+                                               |
+|         v                 v                                               |
+|  +---------------+  +--------------------------------------------------+  |
+|  | PostgreSQL 16 |  | ML Microservice (:8001)                          |  |
+|  | (19 Tables)   |  | - Unsupervised Anomaly Detection                 |  |
+|  +---------------+  | - XGBoost Multi-Class Classifier                 |  |
+|                     | - Resource Forecast & Predictive Maintenance     |  |
+|                     +--------------------------------------------------+  |
++---------------------------------------------------------------------------+
 ```
 
 ---
 
-## ML Pipeline
+## 2. Component Breakdown
 
-### Features (derived from MetricPayload)
-- cpu_percent, memory_percent, memory_used_mb
-- disk_read_bytes_sec, disk_write_bytes_sec
-- net_bytes_sent_sec, net_bytes_recv_sec
-- active_connections, process_count
-- event_log_errors_1m, event_log_warnings_1m
+### 2.1 Edge Monitoring Agent (`agent/`)
+- Lightweight Windows service running on GCP VMs.
+- **`collector.py`**:
+  - CPU, RAM, Disk I/O, Network I/O, Process lists via `psutil`.
+  - Windows Security & System Event Log via `pywin32` (`win32evtlog`).
+- **`sender.py`**: Transmits periodic JSON payloads to `POST /api/v1/ingest` with `X-API-Key` authentication and exponential back-off via `tenacity`.
 
-### Algorithm
-- **Primary**: XGBoostClassifier (multi-class, 6 labels)
-- **Fallback**: RandomForestClassifier (scikit-learn)
-- **Validation**: 5-fold stratified cross-validation
-- **No hardcoded metrics**: all metrics derived from real training data only
+### 2.2 Control Backend (`backend/`)
+- **FastAPI Core**: Async REST API with dependency injection for JWT users (`require_role`) and host agents (`get_agent_from_api_key`).
+- **Database Layer**: SQLAlchemy 2 async engine with Alembic migrations, managing 19 models with UUID PKs and index optimizations.
+- **WebSocket Hub (`/ws/live`)**:
+  - Broadcasts on 6 channels (`metrics`, `detections`, `incidents`, `predictions`, `responses`, `models`).
+  - Active client connection tracking with 20-second heartbeat.
+- **Adaptive Engine**: Automatically issues response actions (`block_ip`, `kill_process`, `restart_service`) and updates the `blocklist` upon high-confidence detections.
 
-### Training Trigger
-- Manual: `POST /api/v1/ml/train` (admin only)
-- Minimum: 500 labelled samples required before training is attempted
-- If insufficient data: returns `{"status": "not_available"}`
+### 2.3 Machine Learning Microservice (`ml/`)
+- **Feature Extraction**: Canonical 11-feature normalized vectors from telemetry snapshots.
+- **Attack Classification**: Multi-class XGBoost model classifying `benign`, `brute_force`, `ddos`, `port_scan`, `unauthorized_access`, and `suspicious_process`.
+- **Zero-Fake-Metrics Policy**: Returns `{"status": "not_available"}` whenever no trained model artifact or insufficient training data exists.
+- **Continuous Learning & Drift**: Active learning via analyst feedback (`feedback_labels`) and drift metrics (`drift_events`).
 
-### Model Versioning
-- Stored in `ml/models/` as `model_v{major}.{minor}.{patch}.joblib`
-- Metadata tracked in `ml_models` DB table
-- Only one model marked `is_active = true` at a time
-
----
-
-## Wazuh Integration
-
-Wazuh provides host-based intrusion detection as a complementary signal:
-- **Wazuh Manager**: runs in Docker on dev PC
-- **Wazuh Agents**: installed via MSI on each GCP Windows VM
-- **Alert forwarding**: FastAPI subscribes to Wazuh REST API (`/security/events`)
-  for high-severity (level ≥ 10) alerts and stores them as `AlertRecord` rows
-- Wazuh alerts appear in the same WebSocket `"alerts"` channel
+### 2.4 Deployment & Ingress (`deploy/`)
+- **Nginx Reverse Proxy**:
+  - SSL/TLS termination with HTTP -> HTTPS redirection.
+  - Proxy buffer tuning and WebSocket upgrade headers (`Upgrade`, `Connection: "upgrade"`).
+  - Rate limiting on `/api/v1/auth/login` to prevent brute force.
+- **Docker Compose**: Orchestrates PostgreSQL 16 (persistent named volume), backend, frontend, and Nginx with memory constraints designed for 8–16 GB Windows host PCs.
 
 ---
 
-## Deployment Notes
+## 3. Data Flow Pipelines
 
-### Dev / Local
-```
-docker compose -f deploy/docker-compose.yml up -d
-npm run dev  # in frontend/
-```
+### 3.1 Telemetry & Detection Pipeline
+1. Agent samples telemetry every 30 seconds -> sends HTTP POST to `/api/v1/ingest`.
+2. Backend saves row to `metrics` table -> pushes live snapshot to WebSocket `metrics` channel.
+3. Backend enqueues async task to ML service `/predict`.
+4. If anomalous:
+   - Row added to `detections` table.
+   - Attack classification saved to `classifications`.
+   - Live alert pushed to WebSocket `detections` channel.
+   - If confidence exceeds threshold, auto-mitigation (`response_actions`) triggers and IP is added to `blocklist`.
 
-### Production (self-hosted on dev PC)
-```
-docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.prod.yml up -d
-```
-
-The prod override adds:
-- Nginx with real TLS cert
-- PostgreSQL with volume mount
-- Resource limits on containers
-
-### GCP Free Tier Usage
-- **Compute Engine**: e2-micro (1 vCPU, 1 GB RAM) × 2 VMs → free tier eligible
-- **Networking**: Tailscale eliminates need for public IPs
-- **Storage**: 30 GB standard persistent disk per VM (free tier)
-- **Cost**: ₹0 within free trial
+### 3.2 Predictive Maintenance Pipeline
+1. Host resource utilization trends analyzed across rolling windows.
+2. Horizon forecasts saved to `predictions` and `maintenance_forecasts`.
+3. Analysts alerted before disk exhaustion or resource leaks cause host outages.

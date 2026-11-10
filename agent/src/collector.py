@@ -5,7 +5,6 @@ Collects CPU, memory, disk, network, processes, and Windows Event Log metrics.
 """
 from __future__ import annotations
 
-import ctypes
 import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -18,8 +17,6 @@ logger = logging.getLogger(__name__)
 _EVTLOG_AVAILABLE = False
 try:
     import win32evtlog
-    import win32evtlogutil
-    import winerror
     _EVTLOG_AVAILABLE = True
 except ImportError:
     logger.warning("pywin32 not available — Event Log collection disabled")
@@ -181,3 +178,4 @@ class MetricsCollector:
             "event_log_errors_1m": err_count,
             "event_log_warnings_1m": warn_count,
         }
+
