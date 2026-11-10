@@ -1,6 +1,6 @@
 # AdaptiveCloud Windows Agent Configuration
 server:
-  url: "https://localhost"
+  url: "http://127.0.0.1:8000"
   api_key: "adm-agent-live-insecure-dev-key-change-in-production"
   verify_ssl: false           # Set true in production with trusted CA
   timeout_sec: 10
