@@ -90,3 +90,7 @@ htmlcov/
 coverage.xml
 *.lcov
 
+
+*.db
+*.db-journal
+

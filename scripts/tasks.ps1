@@ -5,7 +5,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position=0, Mandatory=$true)]
-    [ValidateSet("up", "down", "prod-up", "prod-down", "logs", "test", "migrate", "lint", "seed", "certs", "e2e", "simulate", "load-test", "backup", "help")]
+    [ValidateSet("run", "up", "down", "prod-up", "prod-down", "logs", "test", "migrate", "lint", "seed", "certs", "e2e", "simulate", "load-test", "backup", "help")]
     [string]$Command,
 
     [Parameter(Position=1, ValueFromRemainingArguments=$true)]
@@ -143,6 +143,12 @@ function Invoke-Certs {
     & "$PSScriptRoot\gen_cert.ps1" @ArgsList
 }
 
+function Invoke-Run {
+    Show-Header "Launching AdaptiveCloud local runtime (FastAPI + Vite React)..."
+    $scriptPath = Join-Path $RepoRoot "scripts\run_local.ps1"
+    & powershell.exe -ExecutionPolicy Bypass -File $scriptPath @ArgsList
+}
+
 function Invoke-ProdUp {
     Show-Header "Starting Production Docker Compose Stack (deploy/docker-compose.prod.yml)..."
     Push-Location $DeployDir
@@ -203,6 +209,7 @@ function Invoke-Backup {
 }
 
 switch ($Command) {
+    "run"       { Invoke-Run }
     "up"        { Invoke-Up }
     "down"      { Invoke-Down }
     "prod-up"   { Invoke-ProdUp }

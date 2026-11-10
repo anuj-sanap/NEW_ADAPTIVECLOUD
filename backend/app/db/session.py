@@ -14,13 +14,26 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
+db_url = str(settings.DATABASE_URL)
+engine_kwargs: dict = {
+    "echo": settings.DB_ECHO,
+}
+
+if "sqlite" in db_url:
+    from sqlalchemy.pool import StaticPool
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+    engine_kwargs["poolclass"] = StaticPool
+else:
+    engine_kwargs.update({
+        "pool_size": settings.DB_POOL_SIZE,
+        "max_overflow": settings.DB_MAX_OVERFLOW,
+        "pool_pre_ping": True,          # Detect stale connections before use
+        "pool_recycle": 3600,           # Recycle connections after 1 hour
+    })
+
 engine = create_async_engine(
-    str(settings.DATABASE_URL),
-    echo=settings.DB_ECHO,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
-    pool_pre_ping=True,          # Detect stale connections before use
-    pool_recycle=3600,           # Recycle connections after 1 hour
+    db_url,
+    **engine_kwargs,
 )
 
 AsyncSessionLocal = async_sessionmaker(

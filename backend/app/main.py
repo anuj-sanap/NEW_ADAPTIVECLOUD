@@ -65,6 +65,37 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         version=settings.APP_VERSION,
         environment=settings.ENVIRONMENT,
     )
+
+    # Auto-initialize tables and default admin when running with local SQLite
+    if "sqlite" in str(settings.DATABASE_URL):
+        try:
+            from sqlalchemy import select
+            from app.db.base import Base
+            from app.db.session import AsyncSessionLocal
+            from app.models.user import User
+            from app.core.security import hash_password
+            import app.models  # ensure models are registered
+
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+
+            async with AsyncSessionLocal() as session:
+                stmt = select(User).where(User.username == "admin")
+                res = await session.execute(stmt)
+                if not res.scalar_one_or_none():
+                    admin_user = User(
+                        username="admin",
+                        email="admin@adaptivecloud.local",
+                        password_hash=hash_password("password123"),
+                        role="admin",
+                        is_active=True,
+                    )
+                    session.add(admin_user)
+                    await session.commit()
+                    logger.info("Default admin user initialized (admin / password123)")
+        except Exception as e:
+            logger.warning("Could not auto-initialize SQLite database: %s", e)
+
     # Start background Wazuh alert tailer and telemetry scheduler workers
     wazuh_tailer.start()
     telemetry_scheduler.start()
