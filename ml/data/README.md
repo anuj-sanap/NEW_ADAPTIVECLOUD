@@ -52,3 +52,4 @@ To guarantee smooth execution on laptops (8–16 GB RAM) and Google Colab free t
 - `ml/training/download_data.py` takes an optional `--sample-ratio 0.05` to `0.10` (5% to 10% stratified sampling).
 - Processed data is cached in `ml/data/cache/*.parquet` for fast 100x faster I/O compared to raw CSVs.
 - If external connectivity is unavailable or network datasets are not yet downloaded, `download_data.py --bootstrap-sample` generates a realistic, statistically calibrated stratified benchmark dataset directly matching the exact 28 CIC-IDS2017 flow feature schema.
+

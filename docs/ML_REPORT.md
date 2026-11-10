@@ -148,3 +148,4 @@ The script automatically executes:
 5. `train_classifiers.py`: Fits Random Forest, XGBoost, Decision Tree, and SVM
 6. `evaluate.py`: Computes test metrics and generates confusion matrix PNGs
 7. `compare.py`: Produces `ml/models/comparison.json` and selects the champion
+

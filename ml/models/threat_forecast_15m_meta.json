@@ -1,0 +1,27 @@
+{
+  "name": "threat_forecast_15m",
+  "task": "threat_forecasting",
+  "version": "1.0.0",
+  "horizon_min": 15,
+  "accuracy": 0.77,
+  "f1_score": 0.0,
+  "roc_auc": 0.3862,
+  "brier_score": 0.1851,
+  "training_time_sec": 0.415,
+  "features": [
+    "hour",
+    "day",
+    "events_lag_1",
+    "events_lag_2",
+    "events_lag_3",
+    "failed_logons_lag_1",
+    "failed_logons_lag_2",
+    "failed_logons_lag_3",
+    "ips_lag_1",
+    "events_roll_mean_3",
+    "events_roll_std_3",
+    "failed_logons_roll_mean_3"
+  ],
+  "created_at": "2026-11-10T15:13:17.122507+00:00",
+  "artifact_path": "ml\\models\\threat_forecast_15m.joblib"
+}

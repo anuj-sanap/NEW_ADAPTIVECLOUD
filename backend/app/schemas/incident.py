@@ -37,3 +37,4 @@ class IncidentResponse(BaseModel):
 
 class IncidentDetailResponse(IncidentResponse):
     items: list[IncidentItemResponse] = []
+

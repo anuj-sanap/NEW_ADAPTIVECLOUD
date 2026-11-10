@@ -72,3 +72,4 @@ async def list_detections(
         size=size,
         pages=pages,
     )
+

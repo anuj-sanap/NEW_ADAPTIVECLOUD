@@ -1,0 +1,62 @@
+{
+  "cpu_15m": {
+    "metric": "cpu",
+    "threshold": 85.0,
+    "horizon_min": 15,
+    "features": [
+      "rolling_mean_3",
+      "rolling_mean_6",
+      "rolling_std_6",
+      "ewma_03",
+      "rate_of_change",
+      "slope_per_min",
+      "current_val"
+    ],
+    "training_samples": 2160,
+    "test_samples": 720,
+    "train_time_sec": 1.1057,
+    "metrics": {
+      "accuracy": 0.9639,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "roc_auc": 0.3818,
+      "brier_score": 0.0359
+    },
+    "created_at": "2026-11-10T15:13:30.022595+00:00"
+  },
+  "mem_30m": {
+    "metric": "mem",
+    "threshold": 90.0,
+    "horizon_min": 30,
+    "features": [
+      "rolling_mean_3",
+      "rolling_mean_6",
+      "rolling_std_6",
+      "ewma_03",
+      "rate_of_change",
+      "slope_per_min",
+      "current_val"
+    ],
+    "training_samples": 2160,
+    "test_samples": 720,
+    "train_time_sec": 0.7626,
+    "metrics": {
+      "accuracy": 0.9333,
+      "precision": 0.3269,
+      "recall": 0.5667,
+      "f1": 0.4146,
+      "roc_auc": 0.9552,
+      "brier_score": 0.037
+    },
+    "created_at": "2026-11-10T15:13:30.923520+00:00"
+  },
+  "disk_theilsen": {
+    "model_type": "TheilSenRegressor",
+    "metric": "disk",
+    "slope_per_minute": 0.001059,
+    "slope_per_day": 1.5244,
+    "r2_test_score": 0.7955,
+    "created_at": "2026-11-10T15:13:31.818062+00:00"
+  }
+}

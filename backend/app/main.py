@@ -26,24 +26,27 @@ from app.api.v1.routes import (
     agent_ingest,
     auth,
     classifications,
+    dashboard,
     detections,
     events,
     hosts,
     incidents,
     ingest,
+    maintenance,
     models,
+    predictions,
+    rca,
 )
 from app.api.v1.routes.stubs import (
     audit_router,
-    dashboard_router,
     learning_router,
     metrics_router,
-    rca_router,
     reports_router,
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import engine, get_db
+from app.services.scheduler import telemetry_scheduler
 from app.services.wazuh_ingestor import wazuh_tailer
 from app.websocket.router import router as ws_router
 
@@ -60,9 +63,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         version=settings.APP_VERSION,
         environment=settings.ENVIRONMENT,
     )
-    # Start background Wazuh alert tailer worker
+    # Start background Wazuh alert tailer and telemetry scheduler workers
     wazuh_tailer.start()
+    telemetry_scheduler.start()
     yield
+    await telemetry_scheduler.stop()
     await wazuh_tailer.stop()
     await engine.dispose()
     logger.info("Application shutdown and DB pool disposed")
@@ -168,14 +173,16 @@ app.include_router(detections.router, prefix=v1)
 app.include_router(classifications.router, prefix=v1)
 app.include_router(incidents.router, prefix=v1)
 app.include_router(models.router, prefix=v1)
+app.include_router(rca.router, prefix=v1)
+app.include_router(predictions.router, prefix=v1)
+app.include_router(maintenance.router, prefix=v1)
+app.include_router(dashboard.router, prefix=v1)
 
 # Route groups (stubs returning 501 until implemented)
 app.include_router(metrics_router, prefix=v1)
-app.include_router(rca_router, prefix=v1)
 app.include_router(learning_router, prefix=v1)
 app.include_router(reports_router, prefix=v1)
 app.include_router(audit_router, prefix=v1)
-app.include_router(dashboard_router, prefix=v1)
 
 # WebSocket streaming hub
 app.include_router(ws_router)

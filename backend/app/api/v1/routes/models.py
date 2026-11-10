@@ -120,3 +120,4 @@ async def activate_model(
         "task": target.task,
         "version": target.version,
     }
+

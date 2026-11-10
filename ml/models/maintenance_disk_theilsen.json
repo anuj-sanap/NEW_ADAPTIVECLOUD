@@ -1,0 +1,8 @@
+{
+  "model_type": "TheilSenRegressor",
+  "metric": "disk",
+  "slope_per_minute": 0.001059,
+  "slope_per_day": 1.5244,
+  "r2_test_score": 0.7955,
+  "created_at": "2026-11-10T15:13:31.818062+00:00"
+}

@@ -110,3 +110,4 @@ async def get_incident(
         updated_at=incident.updated_at,
         items=items,
     )
+

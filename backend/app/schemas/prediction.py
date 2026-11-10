@@ -1,58 +1,66 @@
 """
 backend/app/schemas/prediction.py
-Pydantic schemas for ML prediction query endpoints.
+Pydantic schemas for predictive maintenance, threat forecasts, and dashboard summary telemetry.
 """
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
-from typing import Literal, Optional
-
+from typing import Any, Optional
 from pydantic import BaseModel, Field
 
-AttackLabel = Literal[
-    "benign",
-    "brute_force",
-    "ddos",
-    "port_scan",
-    "unauthorized_access",
-    "suspicious_process",
-]
 
-
-class PredictionRecord(BaseModel):
+class PredictionResponse(BaseModel):
     id: uuid.UUID
-    agent_id: uuid.UUID
-    metric_id: uuid.UUID
-    predicted_at: datetime
-    label: AttackLabel
-    confidence: float = Field(..., ge=0.0, le=1.0)
-    model_version: str
-    features_used: list[str]
+    host_id: uuid.UUID
+    ts: datetime
+    kind: str  # threat | cpu | memory | disk | service
+    horizon_min: int
+    value: float
+    probability: float
+    model_id: Optional[uuid.UUID] = None
+    outcome_observed: Optional[float] = None
+    created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
-class PredictionListResponse(BaseModel):
-    total: int
-    items: list[PredictionRecord]
+class MaintenanceForecastResponse(BaseModel):
+    id: uuid.UUID
+    host_id: uuid.UUID
+    component: str  # disk | memory | cpu | pagefile
+    metric_name: str
+    days_remaining: float
+    confidence: float
+    details: dict[str, Any]
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
-class MLNotAvailable(BaseModel):
-    """Returned when no trained model exists."""
-    status: Literal["not_available"] = "not_available"
+class HostMaintenanceDetailResponse(BaseModel):
+    host_id: uuid.UUID
+    hostname: str
+    forecasts: list[MaintenanceForecastResponse]
+    disk_fill_eta_days: Optional[float] = None
+    service_risks: list[dict[str, Any]] = []
+    component_status: dict[str, str] = {}
 
 
-class MLStatusResponse(BaseModel):
-    status: Literal["ready", "not_available", "training", "failed"]
-    model_version: Optional[str] = None
-    trained_at: Optional[datetime] = None
-    training_samples: Optional[int] = None
-    features: Optional[list[str]] = None
-    labels: Optional[list[str]] = None
-    job_status: Optional[str] = None
+class TopRiskItem(BaseModel):
+    category: str  # threat | maintenance
+    title: str
+    host_id: Optional[uuid.UUID] = None
+    hostname: Optional[str] = None
+    probability: float
+    eta_minutes: Optional[int] = None
+    severity: str
 
 
-class TrainJobResponse(BaseModel):
-    job_id: uuid.UUID
-    status: Literal["queued"]
-    message: str
-
+class DashboardSummaryResponse(BaseModel):
+    host_health_score: float = Field(..., ge=0.0, le=100.0)
+    total_hosts: int
+    online_hosts: int
+    active_incidents: int
+    attack_counts_24h: dict[str, int]
+    top_risks: list[TopRiskItem]

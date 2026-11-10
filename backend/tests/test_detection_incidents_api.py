@@ -230,3 +230,4 @@ async def test_flow_ingest_and_realtime_detection(
     assert data["status"] == "accepted"
     assert "detections" in data
     assert len(data["detections"]) == 1
+

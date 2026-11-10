@@ -162,3 +162,4 @@ def validate_features(data: Any, required_features: Sequence[str] = CANONICAL_FE
             f"Feature validation failed: missing {len(missing)} canonical flow feature(s): {missing}. "
             f"Required canonical set: {list(required_features)}"
         )
+
