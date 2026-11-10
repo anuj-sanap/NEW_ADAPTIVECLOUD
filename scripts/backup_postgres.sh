@@ -45,3 +45,4 @@ fi
 echo "[*] Pruning backups older than ${RETENTION_DAYS} days..."
 find "${BACKUP_DIR}" -type f -name "adaptivecloud_db_*.sql.gz" -mtime +"${RETENTION_DAYS}" -print -delete
 echo "[+] Pruning complete."
+

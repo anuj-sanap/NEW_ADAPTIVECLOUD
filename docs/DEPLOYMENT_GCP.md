@@ -174,3 +174,4 @@ pwsh -File .\scripts\gcp_teardown.ps1 -ProjectId "your-gcp-project-id" -Instance
 # Stop the local Docker Compose stack
 docker compose -f .\deploy\docker-compose.prod.yml down
 ```
+

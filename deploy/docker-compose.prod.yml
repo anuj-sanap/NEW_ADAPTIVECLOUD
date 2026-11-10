@@ -167,3 +167,4 @@ volumes:
   postgres_data:
   wazuh_data:
   wazuh_alerts:
+

@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Automated TLS/SSL Provisioning for AdaptiveCloud.
     Supports:
@@ -116,3 +116,4 @@ if ((Test-Path $KeyPath) -and (Test-Path $CrtPath)) {
 } else {
     Write-Error "Failed to verify generated SSL certificates in $CertsDir"
 }
+

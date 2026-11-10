@@ -156,3 +156,4 @@ pwsh -File .\scripts\gcp_teardown.ps1 -ProjectId "your-gcp-project-id" -Instance
 # 2. Halt local Docker containers
 pwsh -File .\scripts\tasks.ps1 -Task down
 ```
+

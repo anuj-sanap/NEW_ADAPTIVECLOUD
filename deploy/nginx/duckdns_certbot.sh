@@ -71,3 +71,4 @@ else
     sudo chmod 600 "${CERTS_DIR}/server.key"
     echo "[+] Certificates acquired and copied to ${CERTS_DIR}"
 fi
+

@@ -62,3 +62,4 @@ foreach ($pwd in $passwords) {
 
 Write-Host "`n>>> [SUCCESS] Brute-force simulation finished." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /detections and /rca for incident correlation.`n"
+

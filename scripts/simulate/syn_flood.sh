@@ -31,3 +31,4 @@ else
 fi
 
 echo -e "\n\033[1;32m>>> [SUCCESS] SYN burst simulation finished.\033[0m\n"
+

@@ -91,3 +91,4 @@ The web management console is organized into 10 dedicated operational workspaces
 - **7-Day & 30-Day Executive Reports**: System uptime %, incident resolution metrics, attack distribution charts.
 - **Immutable Audit Trail**: Chronological log of every user login, countermeasure approval, and model retraining event.
 - **Export Options**: One-click download of audit logs in JSON or CSV format for management review.
+

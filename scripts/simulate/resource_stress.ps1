@@ -67,3 +67,4 @@ finally {
 
 Write-Host "`n>>> [SUCCESS] Resource stress simulation completed safely." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /maintenance and /monitoring for forecast slope updates.`n"
+

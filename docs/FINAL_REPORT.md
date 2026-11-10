@@ -147,3 +147,4 @@ AdaptiveCloud demonstrates that robust, enterprise-grade cloud security and pred
 1. Extending telemetry agents to Linux and Kubernetes cluster pods.
 2. Federated learning across multiple edge nodes to preserve privacy.
 3. Integration with eBPF network hooks on Linux workers for kernel-level wireline packet filtering.
+

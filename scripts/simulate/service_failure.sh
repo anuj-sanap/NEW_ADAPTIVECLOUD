@@ -26,3 +26,4 @@ else
 fi
 
 echo -e "\n\033[1;32m>>> [SUCCESS] Service failure simulation finished.\033[0m\n"
+

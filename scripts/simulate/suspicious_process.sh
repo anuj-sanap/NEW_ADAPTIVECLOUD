@@ -42,3 +42,4 @@ fi
 
 rm -rf "$SANDBOX_DIR"
 echo -e "\n\033[1;32m>>> [SUCCESS] Suspicious process simulation finished.\033[0m\n"
+

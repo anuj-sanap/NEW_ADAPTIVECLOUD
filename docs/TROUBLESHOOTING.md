@@ -132,3 +132,4 @@ Live telemetry feature distributions have shifted significantly from the baselin
 2. Review drifted features (e.g. `flow_pkts_s`, `bwd_pkt_len_mean`).
 3. Click **Trigger Retraining** to retrain candidate model on combined baseline + active feedback stream.
 4. Review Champion vs Challenger F1-scores and promote if challenger exceeds champion.
+

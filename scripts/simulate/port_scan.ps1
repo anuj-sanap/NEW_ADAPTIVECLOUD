@@ -45,3 +45,4 @@ foreach ($port in $Ports) {
 
 Write-Host "`n>>> [SUCCESS] Port scan simulation finished." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /detections and /classifications.`n"
+

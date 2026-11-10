@@ -45,3 +45,4 @@ $stopwatch.Stop()
 
 Write-Host "`n>>> [SUCCESS] SYN burst simulation finished ($count connections tested)." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /detections, /classifications, and /responses.`n"
+

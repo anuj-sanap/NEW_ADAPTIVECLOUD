@@ -100,3 +100,4 @@ foreach ($file in $oldFiles) {
 
 Write-Host "[+] Retention sweep complete: $prunedCount expired backup(s) pruned." -ForegroundColor Green
 Write-Host ">>> POSTGRESQL BACKUP COMPLETED CLEANLY." -ForegroundColor Cyan
+

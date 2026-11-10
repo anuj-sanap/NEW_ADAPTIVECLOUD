@@ -38,3 +38,4 @@ echo -e "\n\033[1;32m===========================================================
 echo -e " [COMPLETED] All 6 attack simulations executed successfully!"
 echo -e " Review AdaptiveCloud UI: http://localhost:5173"
 echo -e "========================================================================\033[0m\n"
+

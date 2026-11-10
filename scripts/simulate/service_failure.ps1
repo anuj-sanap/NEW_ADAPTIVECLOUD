@@ -49,3 +49,4 @@ if ($recoveredStatus -eq "Running") {
 
 Write-Host "`n>>> [SUCCESS] Service failure simulation finished." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /maintenance and /responses for verified recovery action.`n"
+

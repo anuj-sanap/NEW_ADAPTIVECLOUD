@@ -27,3 +27,4 @@ for i in $(seq 1 "$ATTEMPTS"); do
 done
 
 echo -e "\n\033[1;32m>>> [SUCCESS] Brute-force simulation finished.\033[0m\n"
+

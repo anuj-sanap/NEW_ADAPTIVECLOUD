@@ -29,3 +29,4 @@ else
 fi
 
 echo -e "\n\033[1;32m>>> [SUCCESS] Port scan simulation finished.\033[0m\n"
+

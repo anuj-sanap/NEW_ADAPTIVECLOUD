@@ -61,3 +61,4 @@ Remove-Item -Path $tempSandboxDir -Recurse -Force -ErrorAction SilentlyContinue
 
 Write-Host "`n>>> [SUCCESS] Suspicious process simulation finished." -ForegroundColor Green
 Write-Host ">>> Check AdaptiveCloud Dashboard: /detections and /responses.`n"
+
