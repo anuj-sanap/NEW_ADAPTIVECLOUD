@@ -8,13 +8,11 @@ from __future__ import annotations
 
 import logging
 import platform
-import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
-import psutil
 import yaml
 
 from agent.collectors import (
@@ -23,6 +21,7 @@ from agent.collectors import (
     SystemCollector,
     WinEventsCollector,
 )
+from agent.executor import AgentExecutor
 from agent.sender import AgentSender
 
 logging.basicConfig(
@@ -47,51 +46,16 @@ def load_config(config_path: str = "config.yaml") -> dict[str, Any]:
 
 
 class ResponseExecutor:
-    """Executes countermeasures (block_ip, kill_process, restart_service) received from backend."""
+    """Executes countermeasures (block_ip, restrict, kill_process, restart_service) received from backend."""
 
-    @staticmethod
-    def execute(command: dict[str, Any]) -> dict[str, Any]:
+    _executor = AgentExecutor(dry_run=False)
+
+    @classmethod
+    def execute(cls, command: dict[str, Any]) -> dict[str, Any]:
         action = command.get("action", "")
         target = command.get("target", "")
         cmd_id = command.get("id")
-        logger.info("Executing response countermeasure: %s on target '%s'", action, target)
-
-        result: dict[str, Any] = {"command_id": cmd_id, "success": False, "output": ""}
-
-        try:
-            if action == "block_ip":
-                rule_name = f"AdaptiveBlock_{target.replace(':', '_')}"
-                cmd = ["netsh", "advfirewall", "firewall", "add", "rule", f"name={rule_name}", "dir=in", "action=block", f"remoteip={target}"]
-                run_res = subprocess.run(cmd, capture_output=True, text=True, check=False)
-                result["success"] = (run_res.returncode == 0)
-                result["output"] = run_res.stdout or run_res.stderr
-
-            elif action == "kill_process":
-                killed = 0
-                for p in psutil.process_iter(["pid", "name"]):
-                    try:
-                        if str(p.info["pid"]) == str(target) or p.info["name"].lower() == target.lower():
-                            p.kill()
-                            killed += 1
-                    except (psutil.NoSuchProcess, psutil.AccessDenied):
-                        pass
-                result["success"] = (killed > 0)
-                result["output"] = f"Killed {killed} matching process(es)"
-
-            elif action == "restart_service":
-                cmd = f"net stop \"{target}\" && net start \"{target}\""
-                run_res = subprocess.run(cmd, shell=True, capture_output=True, text=True, check=False)
-                result["success"] = (run_res.returncode == 0)
-                result["output"] = run_res.stdout or run_res.stderr
-
-            else:
-                result["output"] = f"Unknown action: {action}"
-
-        except Exception as e:
-            logger.error("Exception executing countermeasure", error=str(e))
-            result["output"] = str(e)
-
-        return result
+        return cls._executor.execute_action(action=action, target=target, action_id=cmd_id)
 
 
 class MonitoringAgent:

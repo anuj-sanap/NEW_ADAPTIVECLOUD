@@ -142,3 +142,4 @@ $elapsed = ((Get-Date) - $startTime).TotalSeconds
 Write-Host ""
 Write-Host "[SUCCESS] Telemetry load generator finished in $([Math]::Round($elapsed, 2))s." -ForegroundColor Green
 Write-Host "Check agent metrics or backend API (/api/v1/metrics) to observe the recorded spikes." -ForegroundColor Cyan
+

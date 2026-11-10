@@ -16,6 +16,7 @@ from app.core.logging import get_logger
 from app.db.session import AsyncSessionLocal
 from app.models.host import Host
 from app.services.maintenance import backfill_observed_outcomes, evaluate_predictive_maintenance
+from app.services.response_engine import cleanup_expired_blocks
 from app.services.threat_prediction import generate_threat_forecasts
 
 logger = get_logger("scheduler")
@@ -80,6 +81,12 @@ class TelemetryScheduler:
                 except Exception as e:
                     logger.warning("Error during prediction outcome backfill: %s", e)
 
+                # 4. Clean up expired IP blocks
+                try:
+                    await cleanup_expired_blocks(db)
+                except Exception as e:
+                    logger.warning("Error during expired block cleanup: %s", e)
+
             except Exception as e:
                 logger.error("Database error during scheduler execution cycle: %s", e)
 
@@ -104,3 +111,4 @@ class TelemetryScheduler:
 
 
 telemetry_scheduler = TelemetryScheduler(interval_seconds=60)
+

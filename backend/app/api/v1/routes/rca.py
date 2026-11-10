@@ -94,3 +94,4 @@ async def regenerate_incident_rca(
 
     rca = await generate_rca_report(db, incident_id)
     return _format_rca_response(rca)
+
