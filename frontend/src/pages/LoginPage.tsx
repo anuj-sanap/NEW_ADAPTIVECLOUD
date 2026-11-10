@@ -7,8 +7,8 @@ import { useAuthStore } from '@/store/authStore'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { setTokens, setUser } = useAuthStore()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('admin')
+  const [password, setPassword] = useState('password123')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -88,10 +88,24 @@ export default function LoginPage() {
             </p>
           )}
 
+          <div className="bg-indigo-950/60 border border-indigo-800/80 rounded-lg p-3 text-xs text-indigo-300 flex items-center justify-between">
+            <div>
+              <span className="font-semibold block text-indigo-200">Default Credentials</span>
+              <span>admin / password123</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setUsername('admin'); setPassword('password123'); }}
+              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded transition-colors"
+            >
+              Autofill
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 px-4 rounded-lg bg-primary-600 hover:bg-primary-700
+            className="w-full py-2.5 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500
                        text-white font-semibold text-sm transition-colors
                        disabled:opacity-60 disabled:cursor-not-allowed"
           >

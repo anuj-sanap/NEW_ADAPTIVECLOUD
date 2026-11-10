@@ -188,7 +188,7 @@ export interface PolicyRule {
 
 export interface PolicyConfig {
   dry_run: boolean;
-  max_actions_per_minute: int;
+  max_actions_per_minute: number;
   never_block_ips: string[];
   policies: PolicyRule[];
 }

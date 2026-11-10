@@ -40,3 +40,6 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const api = apiClient;
+export default apiClient;
