@@ -106,7 +106,7 @@ class AgentSender:
             self._spool_to_disk(endpoint, data)
             return False
         except Exception as e:
-            logger.error("Unexpected error in post transmission", error=str(e))
+            logger.error("Unexpected error in post transmission: %s", str(e))
             return False
 
     def get_commands(self) -> list[dict[str, Any]]:
@@ -146,5 +146,5 @@ class AgentSender:
             logger.error("Agent registration failed (%d): %s", resp.status_code, resp.text)
             return None
         except Exception as e:
-            logger.error("Error during agent registration", error=str(e))
+            logger.error("Error during agent registration: %s", str(e))
             return None

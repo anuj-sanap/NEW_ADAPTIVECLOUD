@@ -37,9 +37,9 @@ WAZUH_ALERTS_PATH=backend/wazuh_alerts.json
 }
 
 if (-not $FrontendOnly) {
-    Write-Host "[*] Starting FastAPI Backend on http://127.0.0.1:8000..." -ForegroundColor Green
+    Write-Host "[*] Starting FastAPI Backend on http://0.0.0.0:8000..." -ForegroundColor Green
     $backendProcess = Start-Process -FilePath $PythonExe `
-        -ArgumentList "-m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload" `
+        -ArgumentList "-m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload" `
         -WorkingDirectory $BackendDir `
         -PassThru
     Write-Host "[+] Backend running (PID: $($backendProcess.Id))" -ForegroundColor Green
