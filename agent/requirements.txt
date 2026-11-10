@@ -1,10 +1,8 @@
-psutil==6.1.0
-pywin32==308
-requests==2.32.3
-python-dotenv==1.0.1
-structlog==24.4.0
-tenacity==9.0.0
-pydantic==2.10.3
-pydantic-settings==2.6.1
-schedule==1.2.2
-
+psutil>=6.1.0
+pywin32>=308; sys_platform == 'win32'
+requests>=2.32.0
+pyyaml>=6.0.2
+tenacity>=9.0.0
+pydantic>=2.10.0
+# scapy is optional for raw packet flow capture if Npcap is present
+scapy>=2.6.0

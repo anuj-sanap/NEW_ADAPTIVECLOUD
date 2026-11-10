@@ -1,0 +1,46 @@
+# AdaptiveCloud Windows Agent Configuration
+server:
+  url: "https://localhost"
+  api_key: "adm-agent-live-insecure-dev-key-change-in-production"
+  verify_ssl: false           # Set true in production with trusted CA
+  timeout_sec: 10
+  buffer_dir: "./data/spool"  # Offline spooling directory
+  max_buffer_mb: 50
+
+agent:
+  hostname: ""                # Empty = auto-detect from platform
+  poll_interval_sec: 10       # Metrics frequency
+  command_poll_sec: 5         # Command poller frequency
+  checkpoint_file: "./data/winevent_checkpoint.json"
+
+collectors:
+  system:
+    enabled: true
+    top_processes_count: 10
+    monitored_services:
+      - "LanmanServer"        # Server / SMB
+      - "TermService"         # Remote Desktop Service
+      - "wuauserv"            # Windows Update
+      - "WinDefend"           # Windows Defender Antivirus
+      - "Wazuh"               # Wazuh Agent service
+
+  winevents:
+    enabled: true
+    lookback_records: 100
+    target_event_ids:
+      - 4624                  # Successful logon
+      - 4625                  # Failed logon
+      - 4672                  # Special privileges assigned
+      - 4688                  # New process created (with command line)
+      - 4720                  # User account created
+
+  processes:
+    enabled: true
+    flag_temp_directories: true
+    flag_encoded_powershell: true
+    high_cpu_threshold_percent: 75.0
+
+  flows:
+    enabled: false            # Set true if Npcap / Scapy is installed
+    window_sec: 5
+    interface: ""             # Empty = default network interface

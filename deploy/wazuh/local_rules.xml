@@ -1,0 +1,65 @@
+<!--
+  AdaptiveCloud Wazuh 4.x Local Rules for Windows Security Telemetry
+  File: deploy/wazuh/local_rules.xml
+  Rule IDs reserved for local installation: 100000 - 100099
+-->
+<group name="windows,adaptivecloud,">
+
+  <!-- Rule 100001: RDP / Network Brute Force Detection (Repeated Event 4625) -->
+  <rule id="100001" level="10" frequency="5" timeframe="60">
+    <if_matched_sid>60122</if_matched_sid>
+    <same_source_ip />
+    <description>AdaptiveCloud: Multiple Windows logon failures (Event 4625) from same IP within 60s - Possible RDP brute force</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>brute_force,authentication_failed,</group>
+  </rule>
+
+  <!-- Rule 100002: Sensitive Privileges Assigned (Event 4672) -->
+  <rule id="100002" level="8">
+    <if_sid>60106</if_sid>
+    <field name="win.system.eventID">^4672$</field>
+    <description>AdaptiveCloud: Special privileges assigned to new logon session (Event 4672)</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>unauthorized_access,privilege_escalation,</group>
+  </rule>
+
+  <!-- Rule 100003: Local User Account Created (Event 4720) -->
+  <rule id="100003" level="9">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4720$</field>
+    <description>AdaptiveCloud: A local user account was created (Event 4720) - Potential persistence mechanism</description>
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+    <group>unauthorized_access,account_change,</group>
+  </rule>
+
+  <!-- Rule 100004: Suspicious Process Creation (Event 4688) -->
+  <rule id="100004" level="10">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^4688$</field>
+    <match>AppData\\Local\\Temp|\\Downloads\\|-enc |-encodedcommand|powershell.*downloadstring|cmd.exe /c</match>
+    <description>AdaptiveCloud: Suspicious process spawned from Temp/Downloads or with encoded command (Event 4688)</description>
+    <mitre>
+      <id>T1059.001</id>
+    </mitre>
+    <group>suspicious_process,execution,</group>
+  </rule>
+
+  <!-- Rule 100005: Port Scan / Rapid Connection Attempt Indicators -->
+  <rule id="100005" level="8" frequency="10" timeframe="30">
+    <if_group>windows</if_group>
+    <field name="win.system.eventID">^5156$|^5157$</field>
+    <same_source_ip />
+    <description>AdaptiveCloud: Rapid inbound network connection attempts from same IP (Windows Filtering Platform) - Port scan indicator</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+    <group>port_scan,recon,</group>
+  </rule>
+
+</group>

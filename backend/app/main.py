@@ -15,15 +15,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.routes import auth, ingest
+from app.api.v1.routes import agent_ingest, auth, events, hosts, ingest
 from app.api.v1.routes.stubs import (
     audit_router,
     blocklist_router,
     classifications_router,
     dashboard_router,
     detections_router,
-    events_router,
-    hosts_router,
     incidents_router,
     learning_router,
     maintenance_router,
@@ -36,7 +34,8 @@ from app.api.v1.routes.stubs import (
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
-from app.db.session import AsyncSessionLocal, engine, get_db
+from app.db.session import engine, get_db
+from app.services.wazuh_ingestor import wazuh_tailer
 from app.websocket.router import router as ws_router
 
 settings = get_settings()
@@ -52,7 +51,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         version=settings.APP_VERSION,
         environment=settings.ENVIRONMENT,
     )
+    # Start background Wazuh alert tailer worker
+    wazuh_tailer.start()
     yield
+    await wazuh_tailer.stop()
     await engine.dispose()
     logger.info("Application shutdown and DB pool disposed")
 
@@ -150,11 +152,12 @@ v1 = settings.API_V1_PREFIX
 # Core implemented routes
 app.include_router(auth.router, prefix=v1)
 app.include_router(ingest.router, prefix=v1)
+app.include_router(agent_ingest.router, prefix=v1)
+app.include_router(hosts.router, prefix=v1)
+app.include_router(events.router, prefix=v1)
 
 # Route groups (stubs returning 501 until implemented)
-app.include_router(hosts_router, prefix=v1)
 app.include_router(metrics_router, prefix=v1)
-app.include_router(events_router, prefix=v1)
 app.include_router(detections_router, prefix=v1)
 app.include_router(classifications_router, prefix=v1)
 app.include_router(incidents_router, prefix=v1)

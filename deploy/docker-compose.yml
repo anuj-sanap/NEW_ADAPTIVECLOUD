@@ -34,6 +34,8 @@ services:
       - ../.env
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres_dev_only}@postgres:5432/adaptivecloud
+    volumes:
+      - wazuh_alerts:/var/ossec/logs/alerts:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -81,23 +83,29 @@ services:
           cpus: "0.5"
           memory: 256M
 
-  # ── Wazuh 4.x SIEM Manager (Optional Local Integration) ─────────────────────
-  # wazuh-manager:
-  #   image: wazuh/wazuh-manager:4.9.2
-  #   container_name: adaptivecloud-wazuh
-  #   restart: unless-stopped
-  #   ports:
-  #     - "1514:1514/udp"   # Wazuh agent event reporting
-  #     - "1515:1515"       # Agent enrollment service
-  #     - "55000:55000"     # Wazuh REST management API
-  #   volumes:
-  #     - wazuh_data:/var/ossec/data
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "1.5"
-  #         memory: 1536M
+  # ── Wazuh 4.x SIEM Manager (Single-node, alerts.json only) ───────────────────
+  wazuh-manager:
+    image: wazuh/wazuh-manager:4.9.2
+    container_name: adaptivecloud-wazuh
+    restart: unless-stopped
+    ports:
+      - "1514:1514/tcp"   # Agent event reporting
+      - "1514:1514/udp"
+      - "1515:1515/tcp"   # Agent enrollment service
+      - "55000:55000/tcp" # Management API
+    environment:
+      - INDEXER_URL=none
+    volumes:
+      - wazuh_data:/var/ossec/data
+      - wazuh_alerts:/var/ossec/logs/alerts
+      - ./wazuh/local_rules.xml:/var/ossec/etc/rules/local_rules.xml:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 1536M
 
 volumes:
   postgres_data:
-  # wazuh_data:
+  wazuh_data:
+  wazuh_alerts:
