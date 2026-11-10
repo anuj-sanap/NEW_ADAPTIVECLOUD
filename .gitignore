@@ -1,0 +1,87 @@
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+*.whl
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/.next/
+frontend/build/
+*.tsbuildinfo
+.npm
+.yarn/cache
+.pnp.*
+
+# ── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.env.local
+secrets/
+secrets.yml
+
+# ── Certificates & Keys ──────────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+deploy/certs/*.pem
+deploy/certs/*.key
+deploy/certs/*.crt
+
+# ── ML artefacts ─────────────────────────────────────────────────────────────
+ml/models/*.pkl
+ml/models/*.joblib
+ml/models/*.bin
+ml/data/*.csv
+ml/data/*.parquet
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+docker-compose.override.yml
+
+# ── Alembic ──────────────────────────────────────────────────────────────────
+# Keep versions tracked; ignore pyc
+backend/alembic/versions/__pycache__/
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# ── IDE ──────────────────────────────────────────────────────────────────────
+.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Coverage & Testing ───────────────────────────────────────────────────────
+.coverage
+htmlcov/
+.pytest_cache/
+coverage.xml
+*.lcov
