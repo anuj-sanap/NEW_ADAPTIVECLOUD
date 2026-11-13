@@ -1,0 +1,173 @@
+# ==============================================================================
+# AdaptiveCloud - Feature Spaces Configuration
+# Defines distinct feature representations for network/host telemetry:
+# - FS-CIC:   Bidirectional NetFlow/IPFIX flow statistics (CIC-IDS2017/2018)
+# - FS-UNSW:  Argus/Bro connection and transaction features (UNSW-NB15)
+# - FS-KDD:   TCP connection summary and domain features (NSL-KDD)
+# - FS-LIVE:  Agent flow accumulator & host sensor features (Live Windows Agent)
+#
+# RULE: Each dataset strictly belongs to ONE feature space.
+#       NEVER concatenate datasets across different feature spaces.
+# ==============================================================================
+
+feature_spaces:
+  FS-CIC:
+    name: "FS-CIC"
+    description: "Bidirectional network flow statistical space (CIC-IDS2017/2018)"
+    dataset_compatibility:
+      - "cic-ids2017"
+      - "cse-cic-ids2018"
+    features:
+      - flow_duration
+      - tot_fwd_pkts
+      - tot_bwd_pkts
+      - totlen_fwd_pkts
+      - totlen_bwd_pkts
+      - fwd_pkt_len_max
+      - fwd_pkt_len_min
+      - fwd_pkt_len_mean
+      - fwd_pkt_len_std
+      - bwd_pkt_len_max
+      - bwd_pkt_len_min
+      - bwd_pkt_len_mean
+      - bwd_pkt_len_std
+      - flow_byts_s
+      - flow_pkts_s
+      - flow_iat_mean
+      - flow_iat_std
+      - flow_iat_max
+      - flow_iat_min
+      - fwd_iat_mean
+      - bwd_iat_mean
+      - fin_flag_cnt
+      - syn_flag_cnt
+      - rst_flag_cnt
+      - psh_flag_cnt
+      - ack_flag_cnt
+      - urg_flag_cnt
+      - pkt_len_mean
+
+  FS-UNSW:
+    name: "FS-UNSW"
+    description: "Argus/Bro flow, packet, and transaction feature space (UNSW-NB15)"
+    dataset_compatibility:
+      - "unsw-nb15"
+    features:
+      - dur
+      - spkts
+      - dpkts
+      - sbytes
+      - dbytes
+      - rate
+      - sttl
+      - dttl
+      - sload
+      - dload
+      - sloss
+      - dloss
+      - sinpkt
+      - dinpkt
+      - sjit
+      - djit
+      - swin
+      - stcpb
+      - dtcpb
+      - dwin
+      - tcprtt
+      - synack
+      - ackdat
+      - smean
+      - dmean
+      - trans_depth
+      - response_body_len
+      - ct_srv_src
+      - ct_state_ttl
+      - ct_dst_ltm
+      - ct_src_dport_ltm
+      - ct_dst_sport_ltm
+      - ct_dst_src_ltm
+
+  FS-KDD:
+    name: "FS-KDD"
+    description: "TCP connection summary feature space (NSL-KDD / KDDCup99)"
+    dataset_compatibility:
+      - "nsl-kdd"
+      - "kddcup99"
+    features:
+      - duration
+      - src_bytes
+      - dst_bytes
+      - land
+      - wrong_fragment
+      - urgent
+      - hot
+      - num_failed_logins
+      - logged_in
+      - num_compromised
+      - root_shell
+      - su_attempted
+      - num_root
+      - num_file_creations
+      - num_shells
+      - num_access_files
+      - is_guest_login
+      - count
+      - srv_count
+      - serror_rate
+      - srv_serror_rate
+      - rerror_rate
+      - srv_rerror_rate
+      - same_srv_rate
+      - diff_srv_rate
+      - srv_diff_host_rate
+      - dst_host_count
+      - dst_host_srv_count
+      - dst_host_same_srv_rate
+      - dst_host_diff_srv_rate
+      - dst_host_same_src_port_rate
+      - dst_host_srv_diff_host_rate
+      - dst_host_serror_rate
+      - dst_host_srv_serror_rate
+      - dst_host_rerror_rate
+      - dst_host_srv_rerror_rate
+
+  FS-LIVE:
+    name: "FS-LIVE"
+    description: "AdaptiveCloud live host & network telemetry space"
+    dataset_compatibility:
+      - "live_cloud_events"
+    features:
+      - flow_duration
+      - tot_fwd_pkts
+      - tot_bwd_pkts
+      - totlen_fwd_pkts
+      - totlen_bwd_pkts
+      - fwd_pkt_len_max
+      - fwd_pkt_len_min
+      - fwd_pkt_len_mean
+      - fwd_pkt_len_std
+      - bwd_pkt_len_max
+      - bwd_pkt_len_min
+      - bwd_pkt_len_mean
+      - bwd_pkt_len_std
+      - flow_byts_s
+      - flow_pkts_s
+      - flow_iat_mean
+      - flow_iat_std
+      - flow_iat_max
+      - flow_iat_min
+      - fwd_iat_mean
+      - bwd_iat_mean
+      - fin_flag_cnt
+      - syn_flag_cnt
+      - rst_flag_cnt
+      - psh_flag_cnt
+      - ack_flag_cnt
+      - urg_flag_cnt
+      - pkt_len_mean
+      # Host sensor attributes
+      - cpu_percent
+      - mem_percent
+      - disk_percent
+      - failed_logons_5m
+      - process_count

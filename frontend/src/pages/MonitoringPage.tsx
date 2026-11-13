@@ -88,11 +88,10 @@ export function MonitoringPage() {
             <div
               key={host.id}
               onClick={() => setSelectedHostId(host.id)}
-              className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                isSelected
-                  ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20'
-                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
-              }`}
+              className={`p-4 rounded-xl border transition-all cursor-pointer ${isSelected
+                ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20'
+                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">

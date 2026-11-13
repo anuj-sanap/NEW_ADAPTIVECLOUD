@@ -136,6 +136,15 @@ def generate_benchmark_sample(n_samples: int = 12000, random_state: int = 42) ->
                 "urg_flag_cnt": float(urg_cnt),
                 "pkt_len_mean": float(all_mean),
                 "label": label,
+                # Mandatory Provenance Schema
+                "dataset": "cic-ids2017",
+                "source_file": "benchmark_sample.parquet",
+                "row_id": f"benchmark_{len(records)}",
+                "original_label": label,
+                "family": "port_scan_recon" if label == "port_scan" else label,
+                "subtype": label,
+                "l1": 0 if label == "benign" else 1,
+                "split": "unassigned",
             }
             records.append(row)
 

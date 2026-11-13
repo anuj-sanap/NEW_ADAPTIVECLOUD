@@ -1,0 +1,284 @@
+# ==============================================================================
+# AdaptiveCloud - Attack Taxonomy Configuration
+# Maps raw dataset labels to 10 Canonical Families:
+# - benign, dos, ddos, brute_force, port_scan_recon, botnet, web_attack,
+#   infiltration, exploit_other, unknown_suspicious
+# L1 binary classification: 0 (benign) | 1 (attack)
+# ==============================================================================
+
+canonical_families:
+  - benign
+  - dos
+  - ddos
+  - brute_force
+  - port_scan_recon
+  - botnet
+  - web_attack
+  - infiltration
+  - exploit_other
+  - unknown_suspicious
+
+mappings:
+  # ── CIC-IDS2017 & CSE-CIC-IDS2018 ──────────────────────────────────────────
+  cic:
+    "BENIGN":
+      family: "benign"
+      subtype: "normal"
+      l1: 0
+    "DoS Hulk":
+      family: "dos"
+      subtype: "dos_hulk"
+      l1: 1
+    "DoS GoldenEye":
+      family: "dos"
+      subtype: "dos_goldeneye"
+      l1: 1
+    "DoS slowloris":
+      family: "dos"
+      subtype: "dos_slowloris"
+      l1: 1
+    "DoS Slowhttptest":
+      family: "dos"
+      subtype: "dos_slowhttptest"
+      l1: 1
+    "DDoS":
+      family: "ddos"
+      subtype: "ddos_loic_http"
+      l1: 1
+    "DDOS attack-HOIC":
+      family: "ddos"
+      subtype: "ddos_hoic"
+      l1: 1
+    "DDOS attack-LOIC-UDP":
+      family: "ddos"
+      subtype: "ddos_loic_udp"
+      l1: 1
+    "FTP-Patator":
+      family: "brute_force"
+      subtype: "brute_force_ftp"
+      l1: 1
+    "SSH-Patator":
+      family: "brute_force"
+      subtype: "brute_force_ssh"
+      l1: 1
+    "Brute Force -Web":
+      family: "brute_force"
+      subtype: "brute_force_web"
+      l1: 1
+    "Brute Force -XSS":
+      family: "web_attack"
+      subtype: "xss"
+      l1: 1
+    "PortScan":
+      family: "port_scan_recon"
+      subtype: "port_scan"
+      l1: 1
+    "Bot":
+      family: "botnet"
+      subtype: "botnet_ares"
+      l1: 1
+    "Web Attack  Brute Force":
+      family: "brute_force"
+      subtype: "brute_force_web"
+      l1: 1
+    "Web Attack  XSS":
+      family: "web_attack"
+      subtype: "xss"
+      l1: 1
+    "Web Attack  Sql Injection":
+      family: "web_attack"
+      subtype: "sql_injection"
+      l1: 1
+    "SQL Injection":
+      family: "web_attack"
+      subtype: "sql_injection"
+      l1: 1
+    "Infiltration":
+      family: "infiltration"
+      subtype: "infiltration_c2"
+      l1: 1
+    "Heartbleed":
+      family: "exploit_other"
+      subtype: "heartbleed_tls"
+      l1: 1
+
+  # ── UNSW-NB15 ──────────────────────────────────────────────────────────────
+  unsw:
+    "Normal":
+      family: "benign"
+      subtype: "normal"
+      l1: 0
+    "Fuzzers":
+      family: "port_scan_recon"
+      subtype: "fuzzing"
+      l1: 1
+    "Analysis":
+      family: "port_scan_recon"
+      subtype: "network_analysis"
+      l1: 1
+    "Backdoors":
+      family: "botnet"
+      subtype: "backdoor_implant"
+      l1: 1
+    "DoS":
+      family: "dos"
+      subtype: "dos_generic"
+      l1: 1
+    "Exploits":
+      family: "exploit_other"
+      subtype: "unsw_exploit"
+      l1: 1
+    "Generic":
+      family: "exploit_other"
+      subtype: "crypto_generic"
+      l1: 1
+    "Reconnaissance":
+      family: "port_scan_recon"
+      subtype: "reconnaissance"
+      l1: 1
+    "Shellcode":
+      family: "infiltration"
+      subtype: "shellcode_injection"
+      l1: 1
+    "Worms":
+      family: "botnet"
+      subtype: "network_worm"
+      l1: 1
+
+  # ── NSL-KDD / KDDCup99 ─────────────────────────────────────────────────────
+  kdd:
+    "normal":
+      family: "benign"
+      subtype: "normal"
+      l1: 0
+    "neptune":
+      family: "dos"
+      subtype: "syn_flood"
+      l1: 1
+    "smurf":
+      family: "dos"
+      subtype: "icmp_echo"
+      l1: 1
+    "pod":
+      family: "dos"
+      subtype: "ping_of_death"
+      l1: 1
+    "teardrop":
+      family: "dos"
+      subtype: "ip_fragmentation"
+      l1: 1
+    "land":
+      family: "dos"
+      subtype: "land_loopback"
+      l1: 1
+    "back":
+      family: "dos"
+      subtype: "apache_dos"
+      l1: 1
+    "satan":
+      family: "port_scan_recon"
+      subtype: "satan_probe"
+      l1: 1
+    "ipsweep":
+      family: "port_scan_recon"
+      subtype: "ip_sweep"
+      l1: 1
+    "portsweep":
+      family: "port_scan_recon"
+      subtype: "port_sweep"
+      l1: 1
+    "nmap":
+      family: "port_scan_recon"
+      subtype: "nmap_probe"
+      l1: 1
+    "warezclient":
+      family: "infiltration"
+      subtype: "unauthorized_software"
+      l1: 1
+    "warezmaster":
+      family: "infiltration"
+      subtype: "unauthorized_server"
+      l1: 1
+    "buffer_overflow":
+      family: "infiltration"
+      subtype: "buffer_overflow"
+      l1: 1
+    "rootkit":
+      family: "infiltration"
+      subtype: "kernel_rootkit"
+      l1: 1
+    "guess_passwd":
+      family: "brute_force"
+      subtype: "password_guessing"
+      l1: 1
+    "ftp_write":
+      family: "exploit_other"
+      subtype: "r2l_ftp_write"
+      l1: 1
+    "imap":
+      family: "exploit_other"
+      subtype: "r2l_imap"
+      l1: 1
+    "phf":
+      family: "web_attack"
+      subtype: "cgi_phf"
+      l1: 1
+    "multihop":
+      family: "infiltration"
+      subtype: "lateral_movement"
+      l1: 1
+    "loadmodule":
+      family: "infiltration"
+      subtype: "dynamic_linker"
+      l1: 1
+    "perl":
+      family: "infiltration"
+      subtype: "perl_suid"
+      l1: 1
+    "spy":
+      family: "infiltration"
+      subtype: "surveillance"
+      l1: 1
+
+  # ── Live Host / Cloud Telemetry ────────────────────────────────────────────
+  live:
+    "benign":
+      family: "benign"
+      subtype: "normal"
+      l1: 0
+    "dos":
+      family: "dos"
+      subtype: "live_dos"
+      l1: 1
+    "ddos":
+      family: "ddos"
+      subtype: "live_ddos"
+      l1: 1
+    "brute_force":
+      family: "brute_force"
+      subtype: "live_brute_force"
+      l1: 1
+    "port_scan_recon":
+      family: "port_scan_recon"
+      subtype: "live_port_scan"
+      l1: 1
+    "botnet":
+      family: "botnet"
+      subtype: "live_botnet"
+      l1: 1
+    "web_attack":
+      family: "web_attack"
+      subtype: "live_web_attack"
+      l1: 1
+    "infiltration":
+      family: "infiltration"
+      subtype: "live_infiltration"
+      l1: 1
+    "exploit_other":
+      family: "exploit_other"
+      subtype: "live_exploit"
+      l1: 1
+    "unknown_suspicious":
+      family: "unknown_suspicious"
+      subtype: "out_of_distribution"
+      l1: 1

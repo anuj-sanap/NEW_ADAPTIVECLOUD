@@ -27,6 +27,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -90,6 +91,18 @@ def train_all_classifiers(
                 eval_metric="mlogloss",
                 random_state=random_state,
                 n_jobs=-1,
+            ),
+            "use_scaled": False,
+            "subsample": None,
+        },
+        "lightgbm": {
+            "model": LGBMClassifier(
+                n_estimators=100,
+                max_depth=8,
+                learning_rate=0.1,
+                random_state=random_state,
+                n_jobs=-1,
+                verbose=-1,
             ),
             "use_scaled": False,
             "subsample": None,

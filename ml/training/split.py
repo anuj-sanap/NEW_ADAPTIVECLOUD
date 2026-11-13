@@ -35,11 +35,13 @@ def split_data(
 
     validate_features(df[list(CANONICAL_FEATURES)])
 
+    strat_col = "family" if "family" in df.columns else "label"
+
     # First split: Train+Val (85%), Test (15%)
     train_val_df, test_df = train_test_split(
         df,
         test_size=test_size,
-        stratify=df["label"],
+        stratify=df[strat_col],
         random_state=random_state,
     )
 
@@ -48,12 +50,23 @@ def split_data(
     train_df, val_df = train_test_split(
         train_val_df,
         test_size=relative_val_size,
-        stratify=train_val_df["label"],
+        stratify=train_val_df[strat_col],
         random_state=random_state,
     )
 
+    train_df = train_df.copy()
+    val_df = val_df.copy()
+    test_df = test_df.copy()
+
+    # Mark provenance split column
+    train_df["split"] = "train"
+    val_df["split"] = "val"
+    test_df["split"] = "test"
+
     # Benign-only train slice for unsupervised Isolation Forest
-    benign_train_df = train_df[train_df["label"] == "benign"].copy()
+    benign_mask = (train_df[strat_col] == "benign")
+    benign_train_df = train_df[benign_mask].copy()
+    benign_train_df["split"] = "benign_train"
 
     # Paths
     train_path = output_dir / "train.parquet"

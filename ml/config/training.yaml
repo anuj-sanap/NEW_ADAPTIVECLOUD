@@ -1,0 +1,31 @@
+# ==============================================================================
+# AdaptiveCloud - Training Pipeline Configuration
+# Stratified splits, sample quotas for free tier/Colab, Parquet caching
+# ==============================================================================
+
+pipeline:
+  random_seed: 42
+  sample_fraction: 0.10         # 10% stratified sample fits free tier & Google Colab
+  min_samples_per_class: 20
+  
+  splits:
+    train: 0.70
+    val: 0.15
+    test: 0.15
+
+  preprocessing:
+    impute_strategy: "median"
+    clip_percentile_low: 0.001
+    clip_percentile_high: 0.999
+    scale_method: "robust"       # robust | standard | minmax
+
+  cache:
+    format: "parquet"
+    compression: "snappy"
+    raw_dir: "ml/data/raw"
+    processed_dir: "ml/data/processed"
+
+  colab:
+    enabled_auto_detect: true
+    drive_mount_path: "/content/drive/MyDrive/AdaptiveCloud_ML"
+    use_gpu_if_available: true
